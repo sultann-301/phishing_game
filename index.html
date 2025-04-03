@@ -28,7 +28,7 @@
 
     create() {
       // Create boat at the top.
-      this.boat = this.physics.add.sprite(this.game.config.width / 2, this.game.config.height/8, 'boat').setImmovable(true);
+      this.boat = this.physics.add.sprite(this.game.config.width / 2, this.game.config.height/6, 'boat').setImmovable(true);
       this.totalScore = 0;
 
       // Create bait below the boat.
@@ -85,68 +85,85 @@
 
       this.input.keyboard.enabled = true;
 
-    // Create spacebar key object
-    this.spaceKey = this.input.keyboard.addKey(
-        Phaser.Input.Keyboard.KeyCodes.SPACE
-    );
 
+      // Function to create a button with a rectangle background
+function createButton(scene, x, y, text, callback, callback2) {
+    let buttonWidth = 140;  // Adjust as needed
+    let buttonHeight = 40;  // Adjust as needed
 
+    // Create the background rectangle
+    let buttonBg = scene.add.rectangle(x, y, buttonWidth, buttonHeight, 0x008000)
+        .setOrigin(0.5, 0.5)
+        .setInteractive();
 
-      // Create a green "Reset" button at the top-right.
-      this.resetButton = this.add.text((this.game.config.width*7)/8, 30, 'Reset', {
+    // Create the text
+    let buttonText = scene.add.text(x, y, text, {
         fontSize: '20px',
+        color: '#ffffff',
+        align: 'center'
+    }).setOrigin(0.5, 0.5);
+
+    // Group both elements
+    let buttonContainer = scene.add.container(0, 0, [buttonBg, buttonText]);
+
+    // Add interaction
+    buttonBg.on('pointerdown', callback);
+    buttonBg.on('pointerup', callback2);
+
+    return buttonContainer;
+}
+
+  let lowerDown = () => {
+          if (this.bait.body.enable) {
+            this.bait.body.setVelocityY(100);
+            this.updateIdleFish()
+            
+          }
+        };
+
+        let lowerUp = () => {
+          if (this.bait.body.enable) {
+            this.bait.body.setVelocityY(0);
+            this.updateIdleFish()
+            
+          }
+        };
+
+      // Create the buttons with the new rectangle design
+      this.resetButton = createButton(this, (this.game.config.width * 9) / 10, this.game.config.height / 20, 'Reset', () => this.resetBait(), () => 0);
+
+      this.lowerButton = createButton(this, this.game.config.width / 2, this.game.config.height / 11, 'Lower Bait', lowerDown,lowerUp);
+
+      this.BaitMenuButton = createButton(this, Math.floor(this.game.config.width / 10), this.game.config.height / 20, 'Shop', () => {
+          if(this.bait.y == this.initialBaitY)
+          {
+              this.openModal();
+          }
+      }, () => 0);
+
+
+      this.scoreText = this.add.text(this.game.config.width/2, 40, 'Bytes: 0', {
+        fontSize: '30px',
         fill: '#00ff00'
-      }).setInteractive();
-      this.resetButton.on('pointerdown', () => {
-        this.resetBait();
-      });
-
-      this.lowerButton = this.add.text((this.game.config.width*5)/8, 30, 'Lower Bait', {
-        fontSize: '20px',
-        fill: '#00ff00'
-      }).setInteractive();
+      }).setInteractive().setOrigin(0.5, 0.5);
 
 
-      this.lowerButton.on('pointerdown', () => {
-        if (this.bait.body.enable) {
-          this.bait.body.setVelocityY(100);
-          this.updateIdleFish()
-          
-        }
-      });
-
-      this.lowerButton.on('pointerup', () => {
-        if (this.bait.body.enable) {
-          this.bait.body.setVelocityY(0);
-          this.updateIdleFish()
-          
-        }
-      });
-    
-
-
-//shop code
-
-this.BaitMenuButton = this.add.text(this.game.config.width/10, 30, 'Shop', {
-    fontSize: '20px',
-    fill: '#00ff00'
-}).setInteractive();
 
 // Create modal background (initially hidden)
 this.modalBackground = this.add.graphics()
-    .fillStyle(0x000000, 0.8)
+    .fillStyle(0x000000, 0.9)
     .fillRect(
-        this.cameras.main.centerX - 300, 
-        this.cameras.main.centerY - 200, 
-        600, 
-        400
+      this.cameras.main.centerX - this.game.config.width*3/8, 
+        this.cameras.main.centerY - this.game.config.height/3,
+        this.game.config.width*3/4, 
+        this.game.config.height*2/3
     )
     .lineStyle(4, 0x00ff00) // Green border
     .strokeRect(
-        this.cameras.main.centerX - 300, 
-        this.cameras.main.centerY - 200, 
-        600, 
-        400
+        this.cameras.main.centerX - this.game.config.width*3/8, 
+        this.cameras.main.centerY - this.game.config.height/3,
+        this.game.config.width*3/4, 
+        this.game.config.height*2/3
     )
     .setVisible(false)
     .setDepth(10);
@@ -155,23 +172,23 @@ this.modalBackground = this.add.graphics()
 // Create modal title
 this.modalTitle = this.add.text(
     this.cameras.main.centerX,
-    this.cameras.main.centerY - 150,
+    this.cameras.main.centerY - this.game.config.height/4,
     'SHOP',
-    { fontSize: '32px', fill: '#ffffff' }
+    { fontSize: '64px', fill: '#ffffff' }
 ).setOrigin(0.5).setVisible(false).setDepth(11);
 
 // Create three options
-const optionTexts = ['Spam Broadcast', 'Fake Links', 'Directed Ph(f)ishing Attack'];
+const optionTexts = ['Website Spoofing', 'Malicious Link Phishing', 'Spear Phishing'];
+this.perks = [false,false,false];
 this.modalOptions = [];
 
 optionTexts.forEach((text, index) => {
     const option = this.add.text(
-        this.cameras.main.centerX,
-        this.cameras.main.centerY - 50 + (index * 80),
-        text,
+        this.cameras.main.centerX - this.game.config.width/3,
+        this.cameras.main.centerY - this.game.config.height/10 + (index * this.game.config.height/6),
+        text + ` (${(index+1)*1024} bytes : )`,
         { fontSize: '24px', fill: '#00ff00' }
     )
-    .setOrigin(0.5)
     .setInteractive()
     .setVisible(false)
     .setDepth(11);
@@ -185,10 +202,22 @@ optionTexts.forEach((text, index) => {
         option.setStyle({ fill: '#00ff00' });
     });
     
-    // Add click handler (now doesn't close modal)
     option.on('pointerdown', () => {
-        console.log(`Selected: ${text}`);
-        // Removed the closeModal() call here
+        if (this.totalScore >= (index+1)*1024) this.perks[index] = true
+        else{
+          this.tweens.add({
+          targets: option,        // The text element you want to affect
+          duration: 500,               // Duration of the tween (in milliseconds)
+          repeat: 3,                   // Number of times to repeat (making it flash 3 times)
+          yoyo: true,                  // This makes it revert back to the original color after each cycle
+          onStart: () => {
+            option.setFill('#ff0000');  // Change color to red at the start
+          },
+          onComplete: () => {
+            option.setFill('#00ff00');    // Change back to original color after flashing
+          }
+        });
+        }
     });
     
     this.modalOptions.push(option);
@@ -196,10 +225,10 @@ optionTexts.forEach((text, index) => {
 
 // Add close button
 this.closeButton = this.add.text(
-    this.cameras.main.centerX + 250,
-    this.cameras.main.centerY - 180,
+    this.cameras.main.centerX + this.game.config.width/3,
+    this.cameras.main.centerY - this.game.config.height/4,
     'X',
-    { fontSize: '24px', fill: '#ff0000' }
+    { fontSize: '48px', fill: '#ff0000' }
 )
 .setOrigin(0.5)
 .setInteractive()
@@ -282,7 +311,7 @@ this.closeModal = function() {
             fish.moveChance = Phaser.Math.FloatBetween(0, 1);
         }
         )
-    }
+      }
 
     updateIdleFish() {
     this.fishes.children.iterate(fish => {
@@ -291,8 +320,6 @@ this.closeModal = function() {
         let randomSpeedX = Phaser.Math.Between(-50, 50);
         let randomSpeedY = Phaser.Math.Between(-20, 20);
         fish.setVelocity(randomSpeedX, 0);
-
-        
       }
     });
   }
@@ -334,6 +361,8 @@ this.closeModal = function() {
 
           // "Catch" fish if it gets close enough.
           if (Phaser.Math.Distance.Between(fish.x, fish.y, this.bait.x, this.bait.y) < 20) {
+            this.totalScore += fish.score;
+            this.scoreText.setText(`Bytes: ${this.totalScore}`)
             fish.disableBody(true, true);
           }
             }
