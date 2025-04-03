@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Phishing Game - Depth & Chance Based Attraction</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+  <style>
+    body { margin: 0; }
+  </style>
+</head>
+<body>
+
+<script>
+  class MainScene extends Phaser.Scene {
+    constructor() {
+      super('MainScene');
+    }
+
+    preload() {
+      // Load assets.
+      this.load.image('boat', 'https://via.placeholder.com/80x30?text=Boat');
+      this.load.image('baitLink', 'https://via.placeholder.com/40x15?text=Link');
+      this.load.image('cursorFish 2', './cursor2.png');
+      this.load.image('cursorFish 3', './cursor3.png');
+      this.load.image('cursorFish 1', './cursor1.png');
+      this.load.image('cursorFish 4', './cursor4.png');
+    }
+
+    create() {
+      // Create boat at the top.
+      this.boat = this.physics.add.sprite(this.game.config.width / 2, this.game.config.height/8, 'boat').setImmovable(true);
+      this.totalScore = 0;
+
+      // Create bait below the boat.
+      this.initialBaitY = this.boat.y + 30;
+      this.bait = this.physics.add.sprite(this.boat.x, this.initialBaitY, 'baitLink');
+      this.bait.setCollideWorldBounds(true);
+
+      // Draw distinct horizontal white depth lines.
+      const graphics = this.add.graphics();
+      graphics.lineStyle(3, 0xFFFFFF); // 3px thick, white lines.
+      // We'll draw lines at y = 150, 300, 450.
+      this.depthLines = [window.innerHeight/4, window.innerHeight/2, Math.floor((window.innerHeight*3)/4)];
+      this.depthLines.forEach(y => {
+        graphics.moveTo(0, y);
+        graphics.lineTo(this.game.config.width, y);
+        graphics.strokePath();
+      });
+
+      
+
+      // Create fish in levels 1 to 3 (leaving level 0 where the boat is).
+      // Each level is 150 pixels high.
+      this.fishes = this.physics.add.group();
+      const fishPerLevel = 20;
+      const margin = 10; // Margin from boundaries so fish don't touch the white lines.
+      // Levels 1, 2, and 3 correspond to y ranges:
+      // Level 1: 150 to 300, Level 2: 300 to 450, Level 3: 450 to 600.
+      const sizeFactors = [0.8, 1, 1.2 ,1.4, 1.6];
+      for (let level = 1; level <= 3; level++) {
+        for (let i = 0; i < fishPerLevel; i++) {
+          let x = Phaser.Math.Between(20, this.game.config.width - 20);
+          let lowerBound = level * (window.innerHeight/4) + margin;
+          let upperBound = (level + 1) * (window.innerHeight/4) - margin;
+          let y = Phaser.Math.Between(lowerBound, upperBound);
+          const choice = Math.floor((Math.random() * 4)) + 1;
+          const index = Math.floor((Math.random() * 5));
+
+            
+          let fish = this.physics.add.sprite(x, y, `cursorFish ${choice}`).setScale(choice == 1 || choice == 4 ? 0.06 * sizeFactors[index] : 0.01 * sizeFactors[index]);
+          fish.setCollideWorldBounds(true);
+          fish.setBounce(1);
+          fish.score = (sizeFactors[index] * 100) * level
+          
+          
+          // Save the fish's depth level.
+          fish.depthLevel = level;
+          // Generate a random move chance between 0 and 1.
+          fish.moveChance = Phaser.Math.FloatBetween(0, 1);
+          // Start idle with a random horizontal velocity.
+          fish.setVelocity(Phaser.Math.Between(-50, 50), 0);
+          this.fishes.add(fish);
+        }
+      }
+
+      this.input.keyboard.enabled = true;
+
+    // Create spacebar key object
+    this.spaceKey = this.input.keyboard.addKey(
+        Phaser.Input.Keyboard.KeyCodes.SPACE
+    );
+
+
+    
+
+      // Input for lowering bait: hold to lower; on release, stop.
+      this.spaceKey.on('down', () => {
+        // Only allow bait movement if not in reset.
+        if (this.bait.body.enable) {
+          this.bait.body.setVelocityY(100);
+          this.updateIdleFish()
+          
+        }
+      });
+      this.spaceKey.on('up', () => {
+        if (this.bait.body.enable) {
+          this.bait.body.setVelocityY(0);
+          this.updateIdleFish()
+         
+        }
+      });
+
+      // Create a green "Reset" button at the top-right.
+      this.resetButton = this.add.text((this.game.config.width*7)/8, 20, 'Reset', {
+        fontSize: '20px',
+        fill: '#00ff00'
+      }).setInteractive();
+      this.resetButton.on('pointerdown', () => {
+        this.resetBait();
+      });
+
+      this.lowerButton = this.add.text((this.game.config.width*5)/8, 20, 'Lower Bait', {
+        fontSize: '20px',
+        fill: '#00ff00'
+      }).setInteractive();
+      this.lowerButton.on('pointerdown', () => {
+        if (this.bait.body.enable) {
+          this.bait.body.setVelocityY(100);
+          this.updateIdleFish()
+          
+        }
+      });
+
+      this.lowerButton.on('pointerup', () => {
+        if (this.bait.body.enable) {
+          this.bait.body.setVelocityY(0);
+          this.updateIdleFish()
+          
+        }
+      });
+    
+
+
+//shop code
+
+this.BaitMenuButton = this.add.text(this.game.config.width/8, 20, 'Shop', {
+    fontSize: '20px',
+    fill: '#00ff00'
+}).setInteractive();
+
+// Create modal background (initially hidden)
+this.modalBackground = this.add.graphics()
+    .fillStyle(0x000000, 0.8)
+    .fillRect(
+        this.cameras.main.centerX - 300, 
+        this.cameras.main.centerY - 200, 
+        600, 
+        400
+    )
+    .lineStyle(4, 0x00ff00) // Green border
+    .strokeRect(
+        this.cameras.main.centerX - 300, 
+        this.cameras.main.centerY - 200, 
+        600, 
+        400
+    )
+    .setVisible(false)
+    .setDepth(10);
+
+
+// Create modal title
+this.modalTitle = this.add.text(
+    this.cameras.main.centerX,
+    this.cameras.main.centerY - 150,
+    'SHOP',
+    { fontSize: '32px', fill: '#ffffff' }
+).setOrigin(0.5).setVisible(false).setDepth(11);
+
+// Create three options
+const optionTexts = ['Spam Broadcast', 'Fake Links', 'Directed Ph(f)ishing Attack'];
+this.modalOptions = [];
+
+optionTexts.forEach((text, index) => {
+    const option = this.add.text(
+        this.cameras.main.centerX,
+        this.cameras.main.centerY - 50 + (index * 80),
+        text,
+        { fontSize: '24px', fill: '#00ff00' }
+    )
+    .setOrigin(0.5)
+    .setInteractive()
+    .setVisible(false)
+    .setDepth(11);
+    
+    // Add hover effect
+    option.on('pointerover', () => {
+        option.setStyle({ fill: '#ff9900' });
+    });
+    
+    option.on('pointerout', () => {
+        option.setStyle({ fill: '#00ff00' });
+    });
+    
+    // Add click handler (now doesn't close modal)
+    option.on('pointerdown', () => {
+        console.log(`Selected: ${text}`);
+        // Removed the closeModal() call here
+    });
+    
+    this.modalOptions.push(option);
+});
+
+// Add close button
+this.closeButton = this.add.text(
+    this.cameras.main.centerX + 250,
+    this.cameras.main.centerY - 180,
+    'X',
+    { fontSize: '24px', fill: '#ff0000' }
+)
+.setOrigin(0.5)
+.setInteractive()
+.setVisible(false)
+.setDepth(11);
+
+
+
+
+
+
+// Close button now works properly
+this.closeButton.on('pointerdown', (pointer) => {
+
+    pointer.event.stopPropagation();
+    this.closeModal();
+});
+
+// Make shop button clickable
+this.BaitMenuButton.on('pointerdown', () => {
+    if(this.bait.y == this.initialBaitY)
+    {
+        this.openModal();
+    }
+        
+});
+
+// Modal functions
+this.openModal = function() {
+    this.modalBackground.setVisible(true);
+    this.modalTitle.setVisible(true);
+    this.modalOptions.forEach(option => option.setVisible(true));
+    this.closeButton.setVisible(true);
+    
+    // Pause game if needed
+    this.time.timeScale = 0;
+};
+
+this.closeModal = function() {
+    console.log("aloo y3m");
+    this.modalBackground.setVisible(false);
+    this.modalTitle.setVisible(false);
+    this.modalOptions.forEach(option => option.setVisible(false));
+    this.closeButton.setVisible(false);
+    
+    // Resume game if needed
+    this.time.timeScale = 1;
+};
+      // Update idle movement every 2 seconds for fish that are not attracted.
+      this.time.addEvent({
+        delay: 1500,
+        loop: true,
+        callback: this.updateIdleFish,
+        callbackScope: this
+      });
+    }
+
+    // Helper: Determine depth level based on y.
+    // For bait, level is floor(y/150). (Bait in level 0 won't attract fish.)
+    getDepthLevel(y) {
+      return Math.floor(y / (window.innerHeight/4));
+    }
+
+    resetBait() {
+      // Disable collision during reset.
+      this.bait.body.enable = false;
+      // Tween the bait upward to its initial position.
+      this.tweens.add({
+        targets: this.bait,
+        y: this.initialBaitY,
+        ease: 'Linear',
+        duration: 1000,
+        onComplete: () => {
+          this.bait.body.enable = true;
+        }
+        
+      });
+      this.fishes.children.iterate(fish =>
+        {
+            fish.moveChance = Phaser.Math.FloatBetween(0, 1);
+        }
+        )
+    }
+
+    updateIdleFish() {
+    this.fishes.children.iterate(fish => {
+      let baitLevel = this.getDepthLevel(this.bait.y);
+      if (this.bait.body.velocity.y !== 0 || fish.depthLevel !== baitLevel) {
+        let randomSpeedX = Phaser.Math.Between(-50, 50);
+        let randomSpeedY = Phaser.Math.Between(-20, 20);
+        fish.setVelocity(randomSpeedX, 0);
+
+        
+      }
+    });
+  }
+
+
+    update() {
+      // Prevent bait from rising above its starting position.
+      if (this.bait.y < this.initialBaitY) {
+        this.bait.setVelocityY(0);
+        this.bait.y = this.initialBaitY;
+      }
+
+
+  // Only attract fish when the bait is stationary, collision is enabled, 
+  // and the bait is in the same depth as the fish.
+  if (this.bait.body.velocity.y === 0 && this.bait.body.enable) {
+    let baitLevel = this.getDepthLevel(this.bait.y);
+    this.fishes.children.iterate(fish => {
+      if (!fish.active) return;
+      if (fish.depthLevel === baitLevel) {
+        // Determine threshold based on the fish's depth.
+        let threshold = 0;
+        if (fish.depthLevel === 1) threshold = 0.3;
+        else if (fish.depthLevel === 2) threshold = 0.6;
+        else if (fish.depthLevel === 3) threshold = 0.9;
+
+        // Only attract the fish if its moveChance exceeds the threshold.
+        if (fish.moveChance > threshold) {
+          let angle = Phaser.Math.Angle.Between(fish.x, fish.y, this.bait.x, this.bait.y);
+          let attractSpeed = 50;
+          let wiggleIntensity = 90; // Strength of wiggle motion
+          let timeFactor = this.time.now * 0.006; // Vary over time
+          let wiggleOffset = Math.sin(timeFactor * 10) * wiggleIntensity; 
+
+          fish.setVelocity(
+            attractSpeed * Math.cos(angle) + wiggleOffset,
+            attractSpeed * Math.sin(angle)
+          );
+
+          // "Catch" fish if it gets close enough.
+          if (Phaser.Math.Distance.Between(fish.x, fish.y, this.bait.x, this.bait.y) < 20) {
+            fish.disableBody(true, true);
+          }
+            }
+          }
+        });
+      }
+    }
+  }
+
+  const config = {
+    type: Phaser.AUTO,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    scene: [MainScene],
+    physics: { default: 'arcade' },
+    fps: {
+        target: 60,
+        forceSetTimeOut: true  // Ensures frame rate is maintained
+    },
+  };
+
+  const game = new Phaser.Game(config);
+</script>
+
+</body>
+</html>
