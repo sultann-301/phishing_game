@@ -91,24 +91,6 @@
     );
 
 
-    
-
-      // Input for lowering bait: hold to lower; on release, stop.
-      this.spaceKey.on('down', () => {
-        // Only allow bait movement if not in reset.
-        if (this.bait.body.enable) {
-          this.bait.body.setVelocityY(100);
-          this.updateIdleFish()
-          
-        }
-      });
-      this.spaceKey.on('up', () => {
-        if (this.bait.body.enable) {
-          this.bait.body.setVelocityY(0);
-          this.updateIdleFish()
-         
-        }
-      });
 
       // Create a green "Reset" button at the top-right.
       this.resetButton = this.add.text((this.game.config.width*7)/8, 30, 'Reset', {
@@ -123,6 +105,8 @@
         fontSize: '20px',
         fill: '#00ff00'
       }).setInteractive();
+
+
       this.lowerButton.on('pointerdown', () => {
         if (this.bait.body.enable) {
           this.bait.body.setVelocityY(100);
@@ -143,7 +127,7 @@
 
 //shop code
 
-this.BaitMenuButton = this.add.text(this.game.config.width/9, 30, 'Shop', {
+this.BaitMenuButton = this.add.text(this.game.config.width/10, 30, 'Shop', {
     fontSize: '20px',
     fill: '#00ff00'
 }).setInteractive();
