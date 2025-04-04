@@ -8,6 +8,7 @@ export class GameManager {
       this.isGameOver = false;
       this.setupBoatAndBait();
       this.spawnFish();
+      this.perks = [false,false,true];
     }
   
     setupBoatAndBait() {
@@ -28,17 +29,17 @@ export class GameManager {
           let x = Phaser.Math.Between(20, this.scene.game.config.width - 20);
           let y = Phaser.Math.Between(level * height / 4 + 10, (level + 1) * height / 4 - 10);
           let type = Phaser.Math.Between(1, 4);
+          
           let scaleIndex = Phaser.Math.Between(0, 4);
           let fish = this.scene.physics.add.sprite(x, y, `cursorFish ${type}`)
             .setScale((type === 1 || type === 4) ? 0.06 * sizeFactors[scaleIndex] : 0.01 * sizeFactors[scaleIndex]);
-  
+          fish.type = type;
           fish.setBounce(1);
           fish.setCollideWorldBounds(true);
           fish.depthLevel = level;
           fish.score = sizeFactors[scaleIndex] * 100 * level;
           fish.moveChance = Phaser.Math.FloatBetween(0, 1);
           fish.setVelocity(Phaser.Math.Between(-50, 50), 0);
-          fish.isAttracted = false;
           this.fishes.add(fish);
         }
       }
@@ -67,6 +68,8 @@ export class GameManager {
     }
   
     update() {
+
+     
       if (this.bait.y < this.initialBaitY) {
         this.bait.setVelocityY(0);
         this.bait.y = this.initialBaitY;
@@ -75,24 +78,44 @@ export class GameManager {
       if (this.bait.body.velocity.y !== 0 || !this.bait.body.enable) return;
   
       let baitLevel = this.getDepthLevel(this.bait.y);
-      this.fishes.children.iterate(fish => {
-        if (!fish.active || fish.depthLevel !== baitLevel) return;
+      if(this.perks[2])
+      {
+        this.applySpearPhish(baitLevel);
+      } else
+      {
+        this.fishes.children.iterate(fish => {
+          if (!fish.active || fish.depthLevel !== baitLevel) return;
+    
+          let threshold = 0.3 + (fish.depthLevel - 1) * 0.3;
+          if (fish.moveChance > threshold && this.bait.body.velocity.y === 0) {
+            let angle = Phaser.Math.Angle.Between(fish.x, fish.y, this.bait.x, this.bait.y);
+            let wiggle = Math.sin(this.scene.time.now * 0.006 * 10) * 90;
+            fish.setVelocity(50 * Math.cos(angle) + wiggle, 50 * Math.sin(angle));
+            fish.isAttracted = true;
+    
+            if (Phaser.Math.Distance.Between(fish.x, fish.y, this.bait.x, this.bait.y) < 20) {
+              this.totalScore += fish.score;
+              this.scene.uiManager.updateScore(this.totalScore);
+              fish.disableBody(true, true);
+              this.applySpawnPhishes(fish);
+              const emitter = this.scene.add.particles(fish.x, fish.y, 'spark', {
+                frame: 'white',
+                scale: 0.03,
+                angle: { min: 0, max: 360 },
+                speed: 200,
+                lifespan:100,
+              });
   
-        let threshold = 0.3 + (fish.depthLevel - 1) * 0.3;
-        if (fish.moveChance > threshold && this.bait.body.velocity.y === 0) {
-          let angle = Phaser.Math.Angle.Between(fish.x, fish.y, this.bait.x, this.bait.y);
-          let wiggle = Math.sin(this.scene.time.now * 0.006 * 10) * 90;
-          fish.setVelocity(50 * Math.cos(angle) + wiggle, 50 * Math.sin(angle));
-          fish.isAttracted = true;
-  
-          if (Phaser.Math.Distance.Between(fish.x, fish.y, this.bait.x, this.bait.y) < 20) {
-            this.totalScore += fish.score;
-            this.scene.uiManager.updateScore(this.totalScore);
-            fish.disableBody(true, true);
+              this.scene.time.delayedCall(400, () => {
+                emitter.stop();
+            });
+            }
           }
-        }
-      });
-      this.isGameOver = this.CheckGameOver();
+        });
+        this.isGameOver = this.CheckGameOver();
+      }
+      
+      
     }
 
 
@@ -107,18 +130,74 @@ export class GameManager {
 
     applyProbBoost()
     {
-      this.fishes.iterate(fish => fish.moveChance += 0.15);
+      if(this.perks[0])
+      {
+        this.fishes.iterate(fish => fish.moveChance += 0.15);
+        this.perks[0] = !this.perks[0];
+
+      }
     }
 
     applySpawnPhishes(fish)
     {
-      const {x,y} = fish;
+      if(this.perks[1]){
+        const {x,y} = fish;
+
+      const { width, height } = this.scene.game.config;
       for( let i = 0; i < 8; i++)
       {
-        let spawnRangeX = Phaser.Math.Between(x, x+20);
-        let spawnRangeY = Phaser.Math.Between(y, x+15);
-        let newFish = this.scene.physics.add.sprite(spawnRangeX, spawnRangey)
+        let minY = fish.depthLevel * height / 4 + 10
+        let maxY = (fish.depthLevel+1)  * height / 4 + 10
+        let spawnRangeX = Phaser.Math.Between(x-70, x+70);
+        let spawnRangeY = Phaser.Math.Between(Math.max(minY, y-50), Math.min(maxY, y+50));
+        let NewFish = this.scene.physics.add.sprite(spawnRangeX, spawnRangeY, `cursorFish ${fish.type}`)
+        NewFish.scaleX = fish.scaleX;
+        NewFish.scaleY = fish.scaleY;
+        NewFish.setBounce(1);
+        NewFish.setCollideWorldBounds(true);
+        NewFish.depthLevel = fish.depthLevel;
+        NewFish.score = fish.score;
+        NewFish.moveChance = 1;
+        NewFish.setVelocity(Phaser.Math.Between(-50, 50), 0);
+        NewFish.setTint('0xaaffaa');
+        this.fishes.add(NewFish);
+
+
       }
+      this.perks[1] = !this.perks[1];
+
+
+      }
+      
+    }
+
+    applySpearPhish()
+    {
+      const { width, height } = this.scene.game.config;
+
+      if(this.perks[2])
+      {
+        let x = Phaser.Math.Between(20, this.scene.game.config.width - 20);
+      let y = Phaser.Math.Between(3 * height / 4 + 10, (3 + 1) * height / 4 - 10);
+      let type = Phaser.Math.Between(1, 4);
+  
+      
+      let fish = this.scene.physics.add.sprite(x, y, `cursorFish ${type}`)
+        .setScale((type === 1 || type === 4) ? 0.06 * 2 : 0.01 * 2);
+      fish.type = type;
+      fish.setBounce(1);
+      fish.setCollideWorldBounds(true);
+      fish.depthLevel = 3;
+      fish.score = 2 * 100 * 3;
+      fish.moveChance = 1;
+      fish.setVelocity(Phaser.Math.Between(-50, 50), 0);
+      fish.setTint("0xd4af37");
+      this.fishes.add(fish);
+
+      this.perks[2] = !this.perks[2];
+      } 
+      
+
     }
   
     getDepthLevel(y) {

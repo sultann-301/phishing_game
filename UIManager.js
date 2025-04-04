@@ -17,12 +17,6 @@ export class UIManager {
       const { width, height } = this.scene.game.config;
 
 
-      const emitter = this.scene.add.particles(100, 300, 'spark', {
-        frame: 'white',
-        scale: 0.02,
-        angle: { min: 0, max: 360 },
-        speed: 40
-      });
       
   
       this.scoreText = this.scene.add.text(width / 2, 25, 'Bytes: 0', {
