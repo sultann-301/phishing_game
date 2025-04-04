@@ -15,6 +15,15 @@ export class UIManager {
   
     createUI() {
       const { width, height } = this.scene.game.config;
+
+
+      const emitter = this.scene.add.particles(100, 300, 'spark', {
+        frame: 'white',
+        scale: 0.02,
+        angle: { min: 0, max: 360 },
+        speed: 40
+      });
+      
   
       this.scoreText = this.scene.add.text(width / 2, 25, 'Bytes: 0', {
         fontSize: '30px',
@@ -97,7 +106,12 @@ export class UIManager {
         ).setInteractive().setVisible(false).setDepth(11);
   
         option.on('pointerover', () => {
-          option.setStyle({ fill: '#ff9900' })
+            if (this.gameManager.totalScore >= (i + 1) * 1024)
+            {
+                option.setStyle({ fill: '#ff9900' })
+            } else {
+                option.setStyle({ fill: '#ff0000' })
+            }
         });
         option.on('pointerout', () => option.setStyle({ fill: '#00ff00' }));
   
@@ -105,15 +119,18 @@ export class UIManager {
           if (this.gameManager.totalScore >= (i + 1) * 1024) {
             this.perks[i] = true;
           } else {
-            const tweeny = this.scene.tweens.add({
+
+            this.scene.tweens.add({
               targets: option,
-              duration: 500,
+              duration: 50,
+              x: option.x +10,
               repeat: 3,
               yoyo: true,
-              onStart: () => option.setFill('#ff0000'),
-              onComplete: () => option.setFill('#00ff00')
+
+              ease: "Sine.easeInOut",
             });
-            tweeny.play()
+            // tweeny.play()
+            // console.log(tweeny.isPlaying())
           }
         });
   

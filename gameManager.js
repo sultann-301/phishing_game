@@ -3,7 +3,9 @@ export class GameManager {
     constructor(scene) {
       this.scene = scene;
       this.totalScore = 0;
-  
+      this.goalScore = 7500;
+      this.reelCount = 3;
+      this.isGameOver = false;
       this.setupBoatAndBait();
       this.spawnFish();
     }
@@ -53,6 +55,8 @@ export class GameManager {
       });
       this.updateIdleFish();
       this.fishes.children.iterate(f => f.moveChance = Phaser.Math.FloatBetween(0, 1));
+      this.reelCount--;
+      this.isGameOver = CheckGameOver();
     }
   
     updateIdleFish() {
@@ -88,6 +92,33 @@ export class GameManager {
           }
         }
       });
+      this.isGameOver = this.CheckGameOver();
+    }
+
+
+    CheckGameOver()
+    {
+      if((this.reelCount == 0 && this.totalScore < this.goalScore) || (this.totalScore >= this.goalScore))
+      {
+        return true;
+      } 
+      return false;
+    }
+
+    applyProbBoost()
+    {
+      this.fishes.iterate(fish => fish.moveChance += 0.15);
+    }
+
+    applySpawnPhishes(fish)
+    {
+      const {x,y} = fish;
+      for( let i = 0; i < 8; i++)
+      {
+        let spawnRangeX = Phaser.Math.Between(x, x+20);
+        let spawnRangeY = Phaser.Math.Between(y, x+15);
+        let newFish = this.scene.physics.add.sprite(spawnRangeX, spawnRangey)
+      }
     }
   
     getDepthLevel(y) {

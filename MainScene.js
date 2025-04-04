@@ -14,12 +14,15 @@ export class MainScene extends Phaser.Scene {
     for (let i = 1; i <= 4; i++) {
       this.load.image(`cursorFish ${i}`, `./cursor${i}.png`);
     }
+    this.load.image('spark', '/sparks.png')
   }
 
   create() {
     // Instantiate managers
     this.gameManager = new GameManager(this);
     this.uiManager = new UIManager(this, this.gameManager);
+
+    
 
     // Draw depth lines
     const graphics = this.add.graphics();
