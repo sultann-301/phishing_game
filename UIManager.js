@@ -104,6 +104,7 @@ export class UIManager {
     createModal() {
       const { centerX, centerY } = this.scene.cameras.main;
       const { width, height } = this.scene.game.config;
+      const fontRatio = Math.min(width, height)
   
       this.modalBackground = this.scene.add.graphics()
         .fillStyle(0x000000, 0.9)
@@ -128,7 +129,7 @@ export class UIManager {
           centerX - width / 3,
           centerY - height / 10 + i * height / 6,
           `${text}\n (${(i + 1) * 1024} bytes)`,
-          { fontSize: '2em', fill: '#00ff00',  }
+          { fontSize: `${fontRatio * 0.03}px`, fill: '#00ff00',  }
         ).setInteractive().setVisible(false).setDepth(11);
 
         let detail = this.scene.add.text(

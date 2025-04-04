@@ -14,7 +14,7 @@ export class MainScene extends Phaser.Scene {
     for (let i = 1; i <= 4; i++) {
       this.load.image(`cursorFish ${i}`, `./cursor${i}.png`);
     }
-    this.load.image('spark', '/sparks.png')
+    this.load.image('spark', '/phishing_project/sparks.png')
   }
 
   create() {
