@@ -60,7 +60,7 @@ export class GameManager {
           onComplete: () => (this.bait.body.enable = true)
         });
         this.updateIdleFish();
-        this.fishes.children.iterate(f => f.moveChance = Phaser.Math.FloatBetween(0, 1));
+        this.fishes.children.iterate(f => f.moveChance = (f.score === 1024 ? 1 : Phaser.Math.FloatBetween(0, 1)));
         this.reelCount -= 1
       }
     }

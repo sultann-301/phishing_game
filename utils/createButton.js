@@ -9,7 +9,7 @@ export function createButton(scene, x, y, text, callback, callback2) {
     let buttonText = scene.add.text(x, y, text, {
       fontSize: '20px',
       color: '#ffffff',
-      align: 'center'
+      align: 'center',
     }).setOrigin(0.5, 0.5);
   
     let buttonContainer = scene.add.container(0, 0, [buttonBg, buttonText]);

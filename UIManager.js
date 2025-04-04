@@ -128,7 +128,7 @@ export class UIManager {
           centerX - width / 3,
           centerY - height / 10 + i * height / 6,
           `${text}\n (${(i + 1) * 1024} bytes)`,
-          { fontSize: '2em', fill: '#00ff00' }
+          { fontSize: '2em', fill: '#00ff00',  }
         ).setInteractive().setVisible(false).setDepth(11);
 
         let detail = this.scene.add.text(
@@ -159,8 +159,14 @@ export class UIManager {
               x: option.x +10,
               repeat: 3,
               yoyo: true,
-
               ease: "Sine.easeInOut",
+              onStart: () => {
+                option.disableInteractive();
+            },
+            onComplete: () => {
+                option.setInteractive();
+                option.setStyle({ fill: '#00ff00' })
+            }
             });
           }
         });
