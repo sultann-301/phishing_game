@@ -33,6 +33,10 @@ export class UIManager {
           }
         }
       );
+
+      this.createButton(width/10, height/10, "How to Play", () => {
+        this.createInstructionsModal();
+      });
     }
   
     createButton(x, y, label, onDown, onUp = () => {}) {
@@ -48,6 +52,8 @@ export class UIManager {
     updateScore(score) {
       this.scoreText.setText(`Bytes: ${score}`);
     }
+
+
   
     createModal() {
       const { centerX, centerY } = this.scene.cameras.main;
@@ -102,6 +108,7 @@ export class UIManager {
   
       this.closeButton.on('pointerdown', () => this.closeModal());
     }
+
   
     openModal() {
       this.modalBackground.setVisible(true);
@@ -117,6 +124,11 @@ export class UIManager {
       this.modalOptions.forEach(o => o.setVisible(false));
       this.closeButton.setVisible(false);
       this.scene.time.timeScale = 1;
+    }
+
+    createInstructionsModal()
+    {
+        
     }
   }
   
