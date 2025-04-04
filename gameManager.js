@@ -51,16 +51,14 @@ export class GameManager {
         duration: 1000,
         onComplete: () => (this.bait.body.enable = true)
       });
-  
+      this.updateIdleFish();
       this.fishes.children.iterate(f => f.moveChance = Phaser.Math.FloatBetween(0, 1));
     }
   
     updateIdleFish() {
       const baitLevel = this.getDepthLevel(this.bait.y);
       this.fishes.children.iterate(fish => {
-        if (this.bait.body.velocity.y !== 0 || fish.depthLevel !== baitLevel) {
-          fish.setVelocity(Phaser.Math.Between(-50, 50), 0);
-        }
+        fish.setVelocity(Phaser.Math.Between(-50, 50), 0);
       });
     }
   
@@ -77,7 +75,7 @@ export class GameManager {
         if (!fish.active || fish.depthLevel !== baitLevel) return;
   
         let threshold = 0.3 + (fish.depthLevel - 1) * 0.3;
-        if (fish.moveChance > threshold) {
+        if (fish.moveChance > threshold && this.bait.body.velocity.y === 0) {
           let angle = Phaser.Math.Angle.Between(fish.x, fish.y, this.bait.x, this.bait.y);
           let wiggle = Math.sin(this.scene.time.now * 0.006 * 10) * 90;
           fish.setVelocity(50 * Math.cos(angle) + wiggle, 50 * Math.sin(angle));

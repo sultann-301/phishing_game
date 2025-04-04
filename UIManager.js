@@ -4,6 +4,10 @@ export class UIManager {
       this.scene = scene;
       this.gameManager = gameManager;
       this.perks = [false, false, false];
+      this.fishButton = null;
+      this.resetButton = null;
+      this.tutButton = null
+      this.shopButton = null;
   
       this.createUI();
       this.createModal();
@@ -17,16 +21,25 @@ export class UIManager {
         fill: '#00ff00'
       }).setOrigin(0.5, 0.5);
   
-      this.createButton(width / 2, height / 11, 'Phish',
-        () => this.gameManager.bait.body.setVelocityY(100),
-        () => this.gameManager.bait.body.setVelocityY(0)
+      this.fishButton = this.createButton(width / 2, height / 11, 'Phish',
+        () => {
+          this.gameManager.bait.body.setVelocityY(100);
+          this.gameManager.updateIdleFish();
+        },
+        () => {
+          this.gameManager.bait.body.setVelocityY(0);
+          this.gameManager.updateIdleFish();
+        }
       );
   
-      this.createButton(width * 9 / 10, height / 20, 'Reset',
-        () => this.gameManager.resetBait()
+      this.resetButton = this.createButton(width * 9 / 10, height / 20, 'Reset',
+        () => {
+          this.gameManager.resetBait();
+          this.gameManager.updateIdleFish();
+        }
       );
   
-      this.createButton(width / 10, height / 20, 'Shop',
+      this.shopButton = this.createButton(width / 10, height / 20, 'Shop',
         () => {
           if (this.gameManager.bait.y === this.gameManager.initialBaitY) {
             this.openModal();
@@ -34,19 +47,21 @@ export class UIManager {
         }
       );
 
-      this.createButton(width/10, height/10, "How to Play", () => {
-        this.createInstructionsModal();
+      this.tutButton = this.createButton(width/10, height/9, "How to\n Play", () => {
+        if (this.gameManager.bait.y === this.gameManager.initialBaitY) {
+          this.createInstructionsModal();
+        }
       });
     }
   
     createButton(x, y, label, onDown, onUp = () => {}) {
       const { width, height } = this.scene.game.config;
       const bg = this.scene.add.rectangle(x, y,width/5.5, height/20, 0x008000).setInteractive();
-      const text = this.scene.add.text(x, y, label, { fontSize: `${Math.floor(20*1)}px`, color: '#ffffff' }).setOrigin(0.5);
+      const text = this.scene.add.text(x, y, label, { fontSize: `1rem`, color: '#ffffff' }).setOrigin(0.5);
       const container = this.scene.add.container(0, 0, [bg, text]);
       bg.on('pointerdown', onDown);
       bg.on('pointerup', onUp);
-      return container;
+      return bg;
     }
   
     updateScore(score) {
@@ -81,14 +96,16 @@ export class UIManager {
           { fontSize: '24px', fill: '#00ff00' }
         ).setInteractive().setVisible(false).setDepth(11);
   
-        option.on('pointerover', () => option.setStyle({ fill: '#ff9900' }));
+        option.on('pointerover', () => {
+          option.setStyle({ fill: '#ff9900' })
+        });
         option.on('pointerout', () => option.setStyle({ fill: '#00ff00' }));
   
         option.on('pointerdown', () => {
           if (this.gameManager.totalScore >= (i + 1) * 1024) {
             this.perks[i] = true;
           } else {
-            this.scene.tweens.add({
+            const tweeny = this.scene.tweens.add({
               targets: option,
               duration: 500,
               repeat: 3,
@@ -96,6 +113,7 @@ export class UIManager {
               onStart: () => option.setFill('#ff0000'),
               onComplete: () => option.setFill('#00ff00')
             });
+            tweeny.play()
           }
         });
   
@@ -116,6 +134,8 @@ export class UIManager {
       this.modalOptions.forEach(o => o.setVisible(true));
       this.closeButton.setVisible(true);
       this.scene.time.timeScale = 0;
+      this.fishButton.disableInteractive();
+      this.tutButton.disableInteractive();
     }
   
     closeModal() {
@@ -124,11 +144,71 @@ export class UIManager {
       this.modalOptions.forEach(o => o.setVisible(false));
       this.closeButton.setVisible(false);
       this.scene.time.timeScale = 1;
+      this.fishButton.setInteractive();
+      this.tutButton.setInteractive();
     }
 
-    createInstructionsModal()
-    {
-        
+    createInstructionsModal() {
+      const { centerX, centerY } = this.scene.cameras.main;
+      const { width, height } = this.scene.game.config;
+    
+      // Dark semi-transparent background
+      this.instructionsBackground = this.scene.add.graphics()
+        .fillStyle(0x000000, 0.9)
+        .fillRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
+        .lineStyle(4, 0x00ff00)
+        .strokeRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
+        .setDepth(10);
+    
+      // Title
+      this.instructionsTitle = this.scene.add.text(centerX, centerY - height / 4, 'HOW TO PLAY', {
+        fontSize: '48px',
+        fill: '#ffffff'
+      }).setOrigin(0.5).setDepth(11);
+    
+      // Instructions text block
+      const instructionsText = 
+        "🪝 Tap 'Phish' to drop your bait!\n\n" +
+        "💰 Earn Bytes by catching fish.\n\n" +
+        "🛍️ Use Bytes to unlock new phishing techniques.";
+    
+      this.instructionsBody = this.scene.add.text(
+        centerX,
+        centerY,
+        instructionsText,
+        {
+          fontSize: '48px',
+          fill: '#00ff00',
+          align: 'center',
+          wordWrap: { width: width * 0.6 }
+        }
+      ).setOrigin(0.5).setDepth(11);
+    
+      // Close button
+      this.instructionsCloseButton = this.scene.add.text(centerX + width / 3, centerY - height / 4, 'X', {
+        fontSize: '48px',
+        fill: '#ff0000'
+      }).setOrigin(0.5).setInteractive().setDepth(11);
+    
+      this.instructionsCloseButton.on('pointerdown', () => {
+        this.instructionsBackground.setVisible(false);
+        this.instructionsTitle.setVisible(false);
+        this.instructionsBody.setVisible(false);
+        this.instructionsCloseButton.setVisible(false);
+        this.fishButton.setInteractive();
+        this.tutButton.setInteractive();
+        this.scene.time.timeScale = 1;
+      });
+    
+      // Make visible & pause game
+      this.instructionsBackground.setVisible(true);
+      this.instructionsTitle.setVisible(true);
+      this.instructionsBody.setVisible(true);
+      this.instructionsCloseButton.setVisible(true);
+      this.scene.time.timeScale = 0;
+      this.fishButton.disableInteractive();
+      this.tutButton.disableInteractive();
     }
+    
   }
   
