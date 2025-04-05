@@ -7,6 +7,7 @@ export class UIManager {
       this.resetButton = null;
       this.tutButton = null
       this.shopButton = null;
+      this.endModalElems = [];
 
   
       this.createUI();
@@ -15,18 +16,41 @@ export class UIManager {
   
     createUI() {
       const { width, height } = this.scene.game.config;
+      this.createGameOverScreen();
 
+     this.scene.time.addEvent({
+      delay: 100,
+      loop: true,
+      callback: () => {
+        const {reelCount, totalScore, goalScore} = this.gameManager;
+        if(((reelCount <= 0 && totalScore < goalScore) || (totalScore >= goalScore))){
 
+            this.endScoreText.setText( `Your Score: ${totalScore} bytes`);
+            this.endGameText.setText(totalScore >= goalScore ? 'You Won :)' : 'You Lost :(');
+            this.endModalElems.forEach(elem => elem.setVisible(true));
+        }
+      }
+     })
       
   
       this.scoreText = this.scene.add.text(width / 2, 25, 'Bytes:0', {
         fontSize: '2rem',
-        fill: '#00ff00'
+        fill: '#ffff04'
       }).setOrigin(0.5, 0.5);
   
       this.fishButton = this.createButton(width / 2, height / 11, 'Phish',
         () => {
-          if(this.gameManager.bait.y === this.gameManager.initialBaitY) this.gameManager.bait.body.setVelocityY(100); //problem in touch screens
+          if(this.gameManager.bait.y.toFixed(2) == this.gameManager.initialBaitY.toFixed(2))
+            {
+
+            this.gameManager.bait.body.setVelocityY(100); //problem in touch screen;
+            }
+            else {
+                console.log(`bait is currently at ${this.gameManager.bait.y} and the initial pos is ${this.gameManager.initialBaitY}`);
+                
+            }
+                
+                
           this.gameManager.updateIdleFish();
         },
         () => {
@@ -37,23 +61,29 @@ export class UIManager {
   
       this.resetButton = this.createButton(width * 9 / 10, height / 20, ` Resets \n   ${this.gameManager.reelCount}`,
         () => {
-          this.gameManager.resetBait();
-          this.resetButton.list[1].setText(` Resets \n   ${this.gameManager.reelCount}`)
-          this.gameManager.updateIdleFish();
+            
+            if(this.gameManager.bait.y.toFixed(2) != this.gameManager.initialBaitY.toFixed(2))
+            {
+                this.gameManager.resetBait(this.resetButton);
+                this.resetButton.list[1].setText(` Resets \n   ${this.gameManager.reelCount}`)
+                this.gameManager.updateIdleFish();
+            }
+            
+          
         }
       );
   
       this.shopButton = this.createButton(width / 10, height / 20, 'Shop',
         () => {
           console.log(this.gameManager.bait.y + ' ' + this.gameManager.initialBaitY)
-          if (this.gameManager.bait.y === this.gameManager.initialBaitY || this.gameManager.bait.body.velocity.y < 0) {
+          if (this.gameManager.bait.y.toFixed(2) == this.gameManager.initialBaitY.toFixed(2) || this.gameManager.bait.body.velocity.y < 0) {
             this.openModal();
           }
         }
       );
 
       this.tutButton = this.createButton(width/10, height/7, "How to play", () => {
-        if (this.gameManager.bait.y === this.gameManager.initialBaitY) {
+        if (this.gameManager.bait.y.toFixed(2) == this.gameManager.initialBaitY.toFixed(2)) {
           this.createInstructionsModal();
         }
       });
@@ -62,12 +92,23 @@ export class UIManager {
     createButton(x, y, label, onDown, onUp = () => {}) {
       const { width, height } = this.scene.game.config;
       const fontRatio = Math.min(width, height)
-      const bg = this.scene.add.rectangle(x, y,width/5.5, height/20 + 20, 0x008000).setInteractive();
-      const text = this.scene.add.text(x, y, label, { fontSize: `${fontRatio * 0.035}px`, color: '#ffffff',  wordWrap: {width: width/5.5}})
+      const bg = this.scene.add.rectangle(x, y,width/5.5, height/20 + 20, 0x355da4).setInteractive();
+      const outline = this.scene.add.graphics();
+        outline.lineStyle(5, 0xffff04); // White outline, 2px thick
+        outline.strokeRect(
+        bg.x - bg.width / 2,
+        bg.y - bg.height / 2,
+        bg.width,
+        bg.height
+        );
+      const text = this.scene.add.text(x, y, label, { fontSize: `${fontRatio * 0.035}px`, color: '#ffff04',  wordWrap: {width: width/5.5}})
       .setOrigin(0.5);
       const container = this.scene.add.container(0, 0, [bg, text]);
+      text.setInteractive();
       bg.on('pointerdown', onDown);
       bg.on('pointerup', onUp);
+      text.on('pointerdown', onDown); 
+      text.on('pointerup', onUp); 
       return container;
     }
   
@@ -82,7 +123,7 @@ export class UIManager {
           `+${increase}`,
           {
             fontSize: '1rem',
-            fill: increase == 1024 ? '#d4af37' : '#00ff00',
+            fill: increase == 1024*4 ? '#d4af37' : '#ffff04',
             fontStyle: 'bold'
           }
         ).setOrigin(0, 0.5).setDepth(100); // float above
@@ -113,7 +154,6 @@ export class UIManager {
         .lineStyle(4, 0x00ff00)
         .strokeRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
         .setVisible(false).setDepth(10);
-  
       this.modalTitle = this.scene.add.text(centerX, centerY - height / 4 - 20, 'SHOP', {
         fontSize: '7em', fill: '#ffffff'
       }).setOrigin(0.5).setVisible(false).setDepth(11);
@@ -121,7 +161,7 @@ export class UIManager {
       const options = ['Website Spoofing', 'Malicious Link Phishing', 'Spear Phishing'];
       const details = ['The creation of a fake website that imitates a legitimate one to trick users into entering sensitive information. The fake website usually has a URL nearly identical to the site being imitated making it difficult to spot.\n\n(This boost will increase the probability of fish getting lured to your bait)', 
                         'A deceptive tactic where attackers send emails or messages with dangerous links that lead to fraudulent sites or trigger malware downloads. If done correctly, it could harm many people as they share the malicious message with each other.\n\n(This boost will make the first fish you catch spawn 8 identical fish nearby which you are guaranteed to catch)',
-                        ' A targeted phishing attack that uses personalized information to deceive specific individuals into revealing confidential data or credentials. It could be of grave consequences if the person targetted is an executive in an important company (e.g CEO).\n\n(This boost will spawn a golden fish having 1024 BYTES in the botton layer which is guaranteed to be caught)']
+                        ' A targeted phishing attack that uses personalized information to deceive specific individuals into revealing confidential data or credentials. It could be of grave consequences if the person targetted is an executive in an important company (e.g CEO).\n\n(This boost will spawn a golden fish having 4096 BYTES in the bottom layer which is guaranteed to be caught.)']
       this.modalOptions = [];
       this.modalDetails = [];
   
@@ -165,6 +205,28 @@ export class UIManager {
             this.gameManager.totalScore -= (i + 1) * 1024
             this.updateScore(this.gameManager.totalScore, 0);
             this.gameManager.perks[i] = true;
+            const effectText = this.scene.add.text(option.x, option.y,
+                `+1 ${text}`,
+                {
+                  fontSize:  `${fontRatio * 0.035}px`,
+                  fill: '#00ff00',
+                  fontStyle: 'bold'
+                }
+              ).setOrigin(0.5).setDepth(100); // float above
+        
+              this.scene.tweens.add({
+                targets: effectText,
+                y: effectText.y - 40,
+                alpha: 0,
+                duration: 3000,
+                ease: 'Cubic.easeOut',
+                onComplete: () => {
+                  effectText.destroy();
+                }
+              });
+
+
+
           } else {
             this.scene.tweens.add({
               targets: option,
@@ -205,6 +267,8 @@ export class UIManager {
       this.scene.time.timeScale = 0;
       this.fishButton.list[0].disableInteractive();
       this.tutButton.list[0].disableInteractive();
+      this.fishButton.list[1].disableInteractive();
+      this.tutButton.list[1].disableInteractive();
     }
   
     closeModal() {
@@ -216,6 +280,8 @@ export class UIManager {
       this.scene.time.timeScale = 1;
       this.fishButton.list[0].setInteractive();
       this.tutButton.list[0].setInteractive();
+      this.fishButton.list[1].setInteractive();
+      this.tutButton.list[1].setInteractive();
     }
 
     createInstructionsModal() {
@@ -236,13 +302,13 @@ export class UIManager {
         fontSize: '6em',
         fill: '#ffffff'
       }).setOrigin(0.5).setDepth(11);
-    
+
       // Instructions text block
       const instructionsText = 
       "\n\n\n\n🪝 Tap 'Phish' to drop your bait!\n\n" +
       "💰 Earn Bytes by catching fish.\n\n" +
       "🛍️ Use Bytes to unlock new phishing techniques.\n\n" +
-      "🌊 The deeper you go, the more aware the fish are.\n\n" +
+      "🌊 The deeper you go, the more aware the fish are of your tactics.\n\n" +
       "🔁 Only 3 resets, so choose where you want to phish wisely.\n\n" +
       `🏆 You need ${this.gameManager.goalScore} Bytes to win. Good luck!`;
     
@@ -271,6 +337,8 @@ export class UIManager {
         this.instructionsCloseButton.setVisible(false);
         this.fishButton.list[0].setInteractive();
         this.shopButton.list[0].setInteractive();
+        this.fishButton.list[1].disableInteractive();
+        this.fishButton.list[1].disableInteractive();
         this.scene.time.timeScale = 1;
       });
     
@@ -282,6 +350,71 @@ export class UIManager {
       this.scene.time.timeScale = 0;
       this.fishButton.list[0].disableInteractive();
       this.shopButton.list[0].disableInteractive();
+      this.fishButton.list[1].disableInteractive();
+      this.shopButton.list[1].disableInteractive()
+
+    }
+
+    
+    createGameOverScreen()
+    {
+            const { centerX, centerY } = this.scene.cameras.main;
+            const {reelCount, totalScore, goalScore} = this.gameManager;
+            const { width, height } = this.scene.game.config;
+            const fontRatio = Math.min(width, height)
+        
+            this.modalBackground = this.scene.add.graphics()
+              .fillStyle(0x000000, 0.9)
+              .fillRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
+              .lineStyle(4, 0x00ff00)
+              .strokeRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
+              .setVisible(false).setDepth(11);
+        
+            this.modalTitle = this.scene.add.text(centerX, centerY - height / 4 - 20, 'GAME OVER', {
+              fontSize: `${fontRatio * 0.08}px`, fill: '#ffffff'
+            }).setOrigin(0.5).setVisible(false).setDepth(11);
+
+            this.endGameText = this.scene.add.text(
+              centerX,
+              centerY - height / 10,
+              totalScore >= goalScore ? 'You Won :)' : 'You Lost :(',
+              { fontSize: `${fontRatio * 0.05}px`, 
+                fill: '#00ff00', 
+                wordWrap: {
+                width: width * 0.6
+                } 
+              }
+            ).setVisible(false).setDepth(15).setOrigin(0.5);
+  
+           this.endScoreText =  this.scene.add.text(
+              centerX,
+              centerY + height / 15,
+              `Your Score: ${totalScore} bytes`,
+              { fontSize: `${Math.floor(fontRatio * 0.035)}px`, 
+                fill: '#00ff00', 
+                wordWrap: {
+                width: width * 0.6
+                } 
+              }
+            ).setInteractive().setVisible(false).setDepth(15).setOrigin(0.5).on('pointerdown', () => {window.location.reload()});
+  
+            this.againButton = this.scene.add.text(
+              centerX,
+              centerY + height / 7,
+              `Play Again`,
+              { fontSize: `${Math.floor(fontRatio * 0.035)}px`, 
+                fill: '#00ff00', 
+                wordWrap: {
+                width: width * 0.6
+                } 
+              }
+            ).setInteractive().setVisible(false).setDepth(15).setOrigin(0.5).on('pointerdown', () => {window.location.reload()})
+            
+            this.againButton.on('pointerover', () => this.againButton.setStyle({ fill: '#ffff00'}))
+            this.againButton.on('pointerout', () => this.againButton.setStyle({ fill: '#00ff00'}))
+
+            this.endModalElems.push(this.modalBackground, this.modalTitle, this.endGameText, this.againButton,this.endScoreText);
+          
     }
     
   }

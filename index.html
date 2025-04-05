@@ -29,12 +29,15 @@
       type: Phaser.AUTO,
       width: window.innerWidth,
       height: window.innerHeight,
+      pixelArt:true,
+      backgroundColor:"#002901",
+
       physics: {
         default: 'arcade',
 
         arcade: {
           gravity: { y: 0 },
-          debug: false
+          debug: false,
         }
       },
       scene: [MainScene]

@@ -3,29 +3,54 @@ export class GameManager {
     constructor(scene) {
       this.scene = scene;
       this.totalScore = 0;
-      this.goalScore = 7500;
+      this.goalScore = 5500;
       this.reelCount = 3;
       this.isGameOver = false;
       this.setupBoatAndBait();
       this.spawnFish();
       this.perks = [false,false,true];
       this.resets = 3;
+       this.lastX, this.lastY;
+      this.trace = this.scene.add.graphics({ lineStyle: { width: 2, color: 0xffff04 } });
+      this.isTracing = false;
     }
 
 
     setupBoatAndBait() {
       const { width, height } = this.scene.game.config;
-      this.boat = this.scene.physics.add.sprite(width / 2, height / 6, 'boat').setImmovable(true);
+      
+
+      const boatSprite = this.scene.add.graphics({ fillStyle: { color: 0x355da4 }, lineStyle: {width: 5, color:0xffff04} });
+// Trapezium coordinates
+      boatSprite.beginPath();
+      boatSprite.moveTo((width/2)-60, (height/6) -15);  // Top left
+      boatSprite.lineTo((width/2) +60, (height/6)-15);  // Top right
+      boatSprite.lineTo((width/2)+25, (height/6) +15);  // Bottom right
+      boatSprite.lineTo((width/2)-25, (height/6) +15);  // Bottom left
+      boatSprite.closePath();
+      boatSprite.strokePath();
+      boatSprite.fillPath();
+            
+
+// optional: convert to texture so you can reuse it like a sprite
+      boatSprite.generateTexture('boatShape', 60, 40);
+
+      this.boat = this.scene.physics.add.sprite(width / 2, height / 6, "boatShape").setImmovable(true);
+      
       this.initialBaitY = this.boat.y + 30;
       this.bait = this.scene.physics.add.sprite(this.boat.x, this.initialBaitY, 'baitLink');
       this.bait.setCollideWorldBounds(true);
+
+
+
+
     }
   
     spawnFish() {
       const { width, height } = this.scene.game.config;
       this.fishes = this.scene.physics.add.group();
       const sizeFactors = [0.8, 1, 1.2, 1.4, 1.6];
-  
+
       for (let level = 1; level <= 3; level++) {
         for (let i = 0; i < 20; i++) {
           let x = Phaser.Math.Between(20, this.scene.game.config.width - 20);
@@ -44,12 +69,13 @@ export class GameManager {
           fish.score = sizeFactors[scaleIndex] * 100 * level;
           fish.moveChance = Phaser.Math.FloatBetween(0, 1);
           fish.setVelocity(Phaser.Math.Between(-50, 50), 0);
+          
           this.fishes.add(fish);
         }
       }
     }
   
-    resetBait() {
+    resetBait(resetButton) {
       if (this.bait.y !== this.initialBaitY){
         this.bait.body.enable = false;
         this.scene.tweens.add({
@@ -57,10 +83,17 @@ export class GameManager {
           y: this.initialBaitY,
           ease: 'Linear',
           duration: 1000,
-          onComplete: () => (this.bait.body.enable = true)
+          onStart: () =>{ 
+          resetButton.list[0].disableInteractive();
+          resetButton.list[1].disableInteractive()
+          },
+          onComplete: () => {this.bait.body.enable = true
+            resetButton.list[0].setInteractive();
+            resetButton.list[1].setInteractive();
+          }
         });
         this.updateIdleFish();
-        this.fishes.children.iterate(f => f.moveChance = (f.score === 1024 ? 1 : Phaser.Math.FloatBetween(0, 1)));
+        this.fishes.children.iterate(f => f.moveChance = (f.score === 1024*4 ? 1 : Phaser.Math.FloatBetween(0, 1)));
         this.reelCount -= 1
       }
     }
@@ -76,6 +109,13 @@ export class GameManager {
         this.bait.setVelocityY(0);
         this.bait.y = this.initialBaitY;
       }
+      this.trace.clear();
+
+     
+        // Draw line from last position to current position
+      this.trace.lineBetween(this.boat.x, this.boat.y, this.bait.x, this.bait.y);
+      
+    
   
       if (this.bait.body.velocity.y !== 0 || !this.bait.body.enable) return;
   
@@ -103,10 +143,10 @@ export class GameManager {
               const emitter = this.scene.add.particles(fish.x, fish.y, 'spark', {
                 scale: fish.score == 1024 ? 0.04 : 0.03,
                 angle: { min: 0, max: 360 },
-                speed: fish.score == 1024 ? 400 : 200,
-                lifespan:fish.score == 1024 ? 800 : 100,
-                tint: fish.score == 1024 ? 0xFFD700 : 0xffffff , // 💛 Gold if 1024, white otherwise
-                quantity: fish.score == 1024 ? 100 : 10
+                speed: fish.score == 1024*4 ? 400 : 200,
+                lifespan:fish.score == 1024*4 ? 800 : 100,
+                tint: fish.score == 1024*4 ? 0xFFD700 : 0xffff04 , // 💛 Gold if 1024, white otherwise
+                quantity: fish.score == 1024*4 ? 100 : 10
               });
   
               this.scene.time.delayedCall(400, () => {
@@ -115,62 +155,7 @@ export class GameManager {
             }
           }
         });
-        if(((this.reelCount == 0 && this.totalScore < this.goalScore) || (this.totalScore >= this.goalScore))){
-          const { centerX, centerY } = this.scene.cameras.main;
-          const { width, height } = this.scene.game.config;
-          const fontRatio = Math.min(width, height)
-      
-          this.modalBackground = this.scene.add.graphics()
-            .fillStyle(0x000000, 0.9)
-            .fillRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
-            .lineStyle(4, 0x00ff00)
-            .strokeRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
-            .setVisible(true).setDepth(11);
-      
-          this.modalTitle = this.scene.add.text(centerX, centerY - height / 4 - 20, 'GAME OVER', {
-            fontSize: `${fontRatio * 0.08}px`, fill: '#ffffff'
-          }).setOrigin(0.5).setVisible(true).setDepth(11);
-
-          this.scene.add.text(
-            centerX,
-            centerY - height / 10,
-            this.totalScore >= this.goalScore ? 'You Won :)' : 'You Lost :(',
-            { fontSize: `${fontRatio * 0.05}px`, 
-              fill: '#00ff00', 
-              wordWrap: {
-              width: width * 0.6
-              } 
-            }
-          ).setVisible(true).setDepth(15).setOrigin(0.5);
-
-          this.scene.add.text(
-            centerX,
-            centerY + height / 15,
-            `Your Score: ${this.totalScore} bytes`,
-            { fontSize: `${fontRatio * 0.035}px`, 
-              fill: '#00ff00', 
-              wordWrap: {
-              width: width * 0.6
-              } 
-            }
-          ).setInteractive().setVisible(true).setDepth(15).setOrigin(0.5).on('pointerdown', () => {window.location.reload()});
-
-          this.againButton = this.scene.add.text(
-            centerX,
-            centerY + height / 7,
-            `Play Again`,
-            { fontSize: `${fontRatio * 0.035}px`, 
-              fill: '#00ff00', 
-              wordWrap: {
-              width: width * 0.6
-              } 
-            }
-          ).setInteractive().setVisible(true).setDepth(15).setOrigin(0.5).on('pointerdown', () => {window.location.reload()})
-          
-          this.againButton.on('pointerover', () => this.againButton.setStyle({ fill: '#ffff00'}))
-          this.againButton.on('pointerout', () => this.againButton.setStyle({ fill: '#00ff00'}))
-
-        }
+        
       }
       
       
@@ -224,18 +209,18 @@ export class GameManager {
       const { width, height } = this.scene.game.config;
 
       if(this.perks[2]){
-        let x = Phaser.Math.Between(20, this.scene.game.config.width - 20);
+        let x = Phaser.Math.Between(200, this.scene.game.config.width - 200);
         let y = Phaser.Math.Between(3 * height / 4 + 10, (3 + 1) * height / 4 - 10);
         let type = Phaser.Math.Between(1, 4);
     
         
         let fish = this.scene.physics.add.sprite(x, y, `cursorFish ${type}`)
-          .setScale((type === 1 || type === 4) ? 0.06 * 2 : 0.01 * 2);
+          .setScale((type === 1 || type === 4) ? 0.06 * 2.5 : 0.01 * 2.5);
         fish.type = type;
         fish.setBounce(1);
         fish.setCollideWorldBounds(true);
         fish.depthLevel = 3;
-        fish.score = 1024;
+        fish.score = 1024*4;
         fish.moveChance = 1;
         fish.setVelocity(Phaser.Math.Between(-50, 50), 0);
         fish.setTint("0xd4af37");

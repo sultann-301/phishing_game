@@ -26,7 +26,7 @@ export class MainScene extends Phaser.Scene {
 
     // Draw depth lines
     const graphics = this.add.graphics();
-    graphics.lineStyle(3, 0xffffff);
+    graphics.lineStyle(3, 0xffff04);
     this.depthLines = [window.innerHeight/4, window.innerHeight/2, (window.innerHeight*3)/4];
     this.depthLines.forEach(y => {
       graphics.moveTo(0, y);
