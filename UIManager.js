@@ -65,7 +65,7 @@ export class UIManager {
             if(this.gameManager.bait.y.toFixed(2) != this.gameManager.initialBaitY.toFixed(2))
             {
                 this.gameManager.resetBait(this.resetButton);
-                this.resetButton.list[1].setText(` Resets \n   ${this.gameManager.reelCount}`)
+                this.resetButton.list[1].setText(` Reels \n   ${this.gameManager.reelCount}`)
                 this.gameManager.updateIdleFish();
             }
             
@@ -151,7 +151,7 @@ export class UIManager {
       this.modalBackground = this.scene.add.graphics()
         .fillStyle(0x000000, 0.9)
         .fillRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
-        .lineStyle(4, 0x00ff00)
+        .lineStyle(4, 0xffff04)
         .strokeRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
         .setVisible(false).setDepth(10);
       this.modalTitle = this.scene.add.text(centerX, centerY - height / 4 - 20, 'SHOP', {
@@ -293,14 +293,14 @@ export class UIManager {
       this.instructionsBackground = this.scene.add.graphics()
         .fillStyle(0x000000, 0.9)
         .fillRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
-        .lineStyle(4, 0x00ff00)
+        .lineStyle(4, 0xffff04)
         .strokeRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
         .setDepth(10);
     
       // Title
       this.instructionsTitle = this.scene.add.text(centerX, centerY - height / 4 + 15, 'Tips', {
         fontSize: '6em',
-        fill: '#ffffff'
+        fill: '#ffff04'
       }).setOrigin(0.5).setDepth(11);
 
       // Instructions text block
@@ -318,7 +318,7 @@ export class UIManager {
         instructionsText,
         {
           fontSize: `${fontRatio * 0.035}px`,
-          fill: '#00ff00',
+          fill: '#ffff04',
           align: 'center',
           wordWrap: { width: width * 0.6 }
         }
@@ -371,7 +371,7 @@ export class UIManager {
               .setVisible(false).setDepth(11);
         
             this.modalTitle = this.scene.add.text(centerX, centerY - height / 4 - 20, 'GAME OVER', {
-              fontSize: `${fontRatio * 0.08}px`, fill: '#ffffff'
+              fontSize: `${fontRatio * 0.08}px`, fill: '#ffff04'
             }).setOrigin(0.5).setVisible(false).setDepth(11);
 
             this.endGameText = this.scene.add.text(
@@ -379,7 +379,7 @@ export class UIManager {
               centerY - height / 10,
               totalScore >= goalScore ? 'You Won :)' : 'You Lost :(',
               { fontSize: `${fontRatio * 0.05}px`, 
-                fill: '#00ff00', 
+                fill: '#ffff04', 
                 wordWrap: {
                 width: width * 0.6
                 } 
@@ -391,7 +391,7 @@ export class UIManager {
               centerY + height / 15,
               `Your Score: ${totalScore} bytes`,
               { fontSize: `${Math.floor(fontRatio * 0.035)}px`, 
-                fill: '#00ff00', 
+                fill: '#ffff04', 
                 wordWrap: {
                 width: width * 0.6
                 } 
@@ -403,7 +403,7 @@ export class UIManager {
               centerY + height / 7,
               `Play Again`,
               { fontSize: `${Math.floor(fontRatio * 0.035)}px`, 
-                fill: '#00ff00', 
+                fill: '#ffff04', 
                 wordWrap: {
                 width: width * 0.6
                 } 
