@@ -59,7 +59,7 @@ export class UIManager {
         }
       );
   
-      this.resetButton = this.createButton(width * 9 / 10, height / 20, ` Resets \n   ${this.gameManager.reelCount}`,
+      this.resetButton = this.createButton(width * 9 / 10, height / 20, ` Reels \n   ${this.gameManager.reelCount}`,
         () => {
             
             if(this.gameManager.bait.y.toFixed(2) != this.gameManager.initialBaitY.toFixed(2))
@@ -305,11 +305,11 @@ export class UIManager {
 
       // Instructions text block
       const instructionsText = 
-      "\n\n\n\n🪝 Tap 'Phish' to drop your bait!\n\n" +
+      "\n\n\n\n🪝 Tap & Hold to 'Phish' &  drop your bait!\n\n" +
       "💰 Earn Bytes by catching fish.\n\n" +
       "🛍️ Use Bytes to unlock new phishing techniques.\n\n" +
       "🌊 The deeper you go, the more aware the fish are of your tactics.\n\n" +
-      "🔁 Only 3 resets, so choose where you want to phish wisely.\n\n" +
+      "🔁 Only 3 reels, so choose where you want to phish wisely.\n\n" +
       `🏆 You need ${this.gameManager.goalScore} Bytes to win. Good luck!`;
     
       this.instructionsBody = this.scene.add.text(
