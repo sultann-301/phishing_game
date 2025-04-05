@@ -38,8 +38,6 @@ export class UIManager {
       this.resetButton = this.createButton(width * 9 / 10, height / 20, ` Resets \n   ${this.gameManager.reelCount}`,
         () => {
           this.gameManager.resetBait();
-          console.log(this.gameManager.reelCount)
-
           this.resetButton.list[1].setText(` Resets \n   ${this.gameManager.reelCount}`)
           this.gameManager.updateIdleFish();
         }
@@ -47,13 +45,14 @@ export class UIManager {
   
       this.shopButton = this.createButton(width / 10, height / 20, 'Shop',
         () => {
-          if (this.gameManager.bait.y === this.gameManager.initialBaitY) {
+          console.log(this.gameManager.bait.y + ' ' + this.gameManager.initialBaitY)
+          if (this.gameManager.bait.y === this.gameManager.initialBaitY || this.gameManager.bait.body.velocity.y < 0) {
             this.openModal();
           }
         }
       );
 
-      this.tutButton = this.createButton(width/10, height/9, "How to\n play", () => {
+      this.tutButton = this.createButton(width/10, height/7, "How to play", () => {
         if (this.gameManager.bait.y === this.gameManager.initialBaitY) {
           this.createInstructionsModal();
         }
@@ -62,8 +61,10 @@ export class UIManager {
   
     createButton(x, y, label, onDown, onUp = () => {}) {
       const { width, height } = this.scene.game.config;
-      const bg = this.scene.add.rectangle(x, y,width/5.5, height/20, 0x008000).setInteractive();
-      const text = this.scene.add.text(x, y, label, { fontSize: `1rem`, color: '#ffffff' }).setOrigin(0.5);
+      const fontRatio = Math.min(width, height)
+      const bg = this.scene.add.rectangle(x, y,width/5.5, height/20 + 20, 0x008000).setInteractive();
+      const text = this.scene.add.text(x, y, label, { fontSize: `${fontRatio * 0.035}px`, color: '#ffffff',  wordWrap: {width: width/5.5}})
+      .setOrigin(0.5);
       const container = this.scene.add.container(0, 0, [bg, text]);
       bg.on('pointerdown', onDown);
       bg.on('pointerup', onUp);
@@ -113,31 +114,41 @@ export class UIManager {
         .strokeRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
         .setVisible(false).setDepth(10);
   
-      this.modalTitle = this.scene.add.text(centerX, centerY - height / 4, 'SHOP', {
-        fontSize: '6em', fill: '#ffffff'
+      this.modalTitle = this.scene.add.text(centerX, centerY - height / 4 - 20, 'SHOP', {
+        fontSize: '7em', fill: '#ffffff'
       }).setOrigin(0.5).setVisible(false).setDepth(11);
   
       const options = ['Website Spoofing', 'Malicious Link Phishing', 'Spear Phishing'];
-      const details = ['The creation of a fake website that imitates a legitimate one to trick users into entering sensitive \ninformation.', 
-                        'A deceptive tactic where attackers send emails or messages with dangerous links that lead to \nfraudulent sites or trigger malware downloads',
-                        ' A targeted phishing attack that uses personalized information to deceive specific individuals \ninto revealing confidential data or credentials.']
+      const details = ['The creation of a fake website that imitates a legitimate one to trick users into entering sensitive information. The fake website usually has a URL nearly identical to the site being imitated making it difficult to spot.\n\n(This boost will increase the probability of fish getting lured to your bait)', 
+                        'A deceptive tactic where attackers send emails or messages with dangerous links that lead to fraudulent sites or trigger malware downloads. If done correctly, it could harm many people as they share the malicious message with each other.\n\n(This boost will make the first fish you catch spawn 8 identical fish nearby which you are guaranteed to catch)',
+                        ' A targeted phishing attack that uses personalized information to deceive specific individuals into revealing confidential data or credentials. It could be of grave consequences if the person targetted is an executive in an important company (e.g CEO).\n\n(This boost will spawn a golden fish having 1024 BYTES in the botton layer which is guaranteed to be caught)']
       this.modalOptions = [];
       this.modalDetails = [];
   
       options.forEach((text, i) => {
         let option = this.scene.add.text(
-          centerX - width / 3,
-          centerY - height / 10 + i * height / 6,
-          `${text}\n (${(i + 1) * 1024} bytes)`,
-          { fontSize: `${fontRatio * 0.03}px`, fill: '#00ff00',  }
-        ).setInteractive().setVisible(false).setDepth(11);
+          centerX,
+          centerY - height / 6 + i * height / 6,
+          `${text} (${(i + 1) * 1024} bytes)`,
+          { fontSize: `${fontRatio * 0.035}px`, 
+            fill: '#00ff00', 
+            wordWrap: {
+            width: width * 0.6
+            } 
+          }
+        ).setInteractive().setVisible(false).setDepth(11).setOrigin(0.5);
 
         let detail = this.scene.add.text(
           centerX - width / 3,
-          centerY - height / 20 + i * height / 6,
+          centerY - height / 8 + i * height / 6,
           `${details[i]}\n`,
-          { fontSize: '1.5em', fill: '#00ff00' }
-        ).setInteractive().setVisible(false).setDepth(11);
+          { fontSize: `${fontRatio * 0.018}px`, 
+            fill: '#e7e304', 
+            wordWrap: {
+            width: width * 0.6
+            } 
+          }
+        ).setInteractive().setVisible(false).setDepth(11).setOrigin(-0.03,0);
   
         option.on('pointerover', () => {
             if (this.gameManager.totalScore >= (i + 1) * 1024)
@@ -152,6 +163,7 @@ export class UIManager {
         option.on('pointerdown', () => {
           if (this.gameManager.totalScore >= (i + 1) * 1024) {
             this.gameManager.totalScore -= (i + 1) * 1024
+            this.updateScore(this.gameManager.totalScore, 0);
             this.gameManager.perks[i] = true;
           } else {
             this.scene.tweens.add({
@@ -176,7 +188,7 @@ export class UIManager {
         this.modalDetails.push(detail);
       });
   
-      this.closeButton = this.scene.add.text(centerX + width / 3, centerY - height / 4, 'X', {
+      this.closeButton = this.scene.add.text(centerX + width / 3 - 20, centerY - height / 4 - 20, 'X', {
         fontSize: '48px', fill: '#ff0000'
       }).setOrigin(0.5).setInteractive().setVisible(false).setDepth(11);
   
@@ -209,33 +221,37 @@ export class UIManager {
     createInstructionsModal() {
       const { centerX, centerY } = this.scene.cameras.main;
       const { width, height } = this.scene.game.config;
+      const fontRatio = Math.min(width, height)
     
       // Dark semi-transparent background
       this.instructionsBackground = this.scene.add.graphics()
         .fillStyle(0x000000, 0.9)
-        .fillRect(centerX - width * 3 / 8, centerY - height / 2.5, width * 3 / 4, height * 2 / 2.5)
+        .fillRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
         .lineStyle(4, 0x00ff00)
-        .strokeRect(centerX - width * 3 / 8, centerY - height / 2.5, width * 3 / 4, height * 2 / 2.5)
+        .strokeRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
         .setDepth(10);
     
       // Title
-      this.instructionsTitle = this.scene.add.text(centerX, centerY - height / 3 + 15, 'HOW TO \n PLAY', {
+      this.instructionsTitle = this.scene.add.text(centerX, centerY - height / 4 + 15, 'Tips', {
         fontSize: '6em',
         fill: '#ffffff'
       }).setOrigin(0.5).setDepth(11);
     
       // Instructions text block
       const instructionsText = 
-        "\n\n\n\n🪝 Tap 'Phish' to drop your bait!\n\n\n\n" +
-        "💰 Earn Bytes by catching fish.\n\n\n\n" +
-        "🛍️ Use Bytes to unlock new phishing techniques.";
+      "\n\n\n\n🪝 Tap 'Phish' to drop your bait!\n\n" +
+      "💰 Earn Bytes by catching fish.\n\n" +
+      "🛍️ Use Bytes to unlock new phishing techniques.\n\n" +
+      "🌊 The deeper you go, the more aware the fish are.\n\n" +
+      "🔁 Only 3 resets, so choose where you want to phish wisely.\n\n" +
+      `🏆 You need ${this.gameManager.goalScore} Bytes to win. Good luck!`;
     
       this.instructionsBody = this.scene.add.text(
         centerX,
         centerY,
         instructionsText,
         {
-          fontSize: '3em',
+          fontSize: `${fontRatio * 0.035}px`,
           fill: '#00ff00',
           align: 'center',
           wordWrap: { width: width * 0.6 }
@@ -243,7 +259,7 @@ export class UIManager {
       ).setOrigin(0.5).setDepth(11);
     
       // Close button
-      this.instructionsCloseButton = this.scene.add.text(centerX + width / 3, centerY - height / 3 + 15, 'X', {
+      this.instructionsCloseButton = this.scene.add.text(centerX + width / 3 - 20, centerY - height / 4 + 15, 'X', {
         fontSize: '48px',
         fill: '#ff0000'
       }).setOrigin(0.5).setInteractive().setDepth(11);

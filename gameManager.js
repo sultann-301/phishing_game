@@ -116,6 +116,59 @@ export class GameManager {
           }
         });
         if(((this.reelCount == 0 && this.totalScore < this.goalScore) || (this.totalScore >= this.goalScore))){
+          const { centerX, centerY } = this.scene.cameras.main;
+          const { width, height } = this.scene.game.config;
+          const fontRatio = Math.min(width, height)
+      
+          this.modalBackground = this.scene.add.graphics()
+            .fillStyle(0x000000, 0.9)
+            .fillRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
+            .lineStyle(4, 0x00ff00)
+            .strokeRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
+            .setVisible(true).setDepth(11);
+      
+          this.modalTitle = this.scene.add.text(centerX, centerY - height / 4 - 20, 'GAME OVER', {
+            fontSize: `${fontRatio * 0.08}px`, fill: '#ffffff'
+          }).setOrigin(0.5).setVisible(true).setDepth(11);
+
+          this.scene.add.text(
+            centerX,
+            centerY - height / 10,
+            this.totalScore >= this.goalScore ? 'You Won :)' : 'You Lost :(',
+            { fontSize: `${fontRatio * 0.05}px`, 
+              fill: '#00ff00', 
+              wordWrap: {
+              width: width * 0.6
+              } 
+            }
+          ).setVisible(true).setDepth(15).setOrigin(0.5);
+
+          this.scene.add.text(
+            centerX,
+            centerY + height / 15,
+            `Your Score: ${this.totalScore} bytes`,
+            { fontSize: `${fontRatio * 0.035}px`, 
+              fill: '#00ff00', 
+              wordWrap: {
+              width: width * 0.6
+              } 
+            }
+          ).setInteractive().setVisible(true).setDepth(15).setOrigin(0.5).on('pointerdown', () => {window.location.reload()});
+
+          this.againButton = this.scene.add.text(
+            centerX,
+            centerY + height / 7,
+            `Play Again`,
+            { fontSize: `${fontRatio * 0.035}px`, 
+              fill: '#00ff00', 
+              wordWrap: {
+              width: width * 0.6
+              } 
+            }
+          ).setInteractive().setVisible(true).setDepth(15).setOrigin(0.5).on('pointerdown', () => {window.location.reload()})
+          
+          this.againButton.on('pointerover', () => this.againButton.setStyle({ fill: '#ffff00'}))
+          this.againButton.on('pointerout', () => this.againButton.setStyle({ fill: '#00ff00'}))
 
         }
       }
