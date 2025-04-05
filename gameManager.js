@@ -38,7 +38,8 @@ export class GameManager {
       this.boat = this.scene.physics.add.sprite(width / 2, height / 6, "boatShape").setImmovable(true);
       
       this.initialBaitY = this.boat.y + 30;
-      this.bait = this.scene.physics.add.sprite(this.boat.x, this.initialBaitY, 'baitLink');
+      this.bait = this.scene.physics.add.sprite(this.boat.x, this.initialBaitY, 'hook1');
+      this.bait.setScale(0.03);
       this.bait.setCollideWorldBounds(true);
 
 

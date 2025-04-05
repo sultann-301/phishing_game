@@ -9,8 +9,10 @@ export class MainScene extends Phaser.Scene {
 
   preload() {
     // Load assets
-    this.load.image('boat', 'https://via.placeholder.com/80x30?text=Boat');
-    this.load.image('baitLink', 'https://via.placeholder.com/40x15?text=Link');
+    this.load.image('hook1', './hook 1.png');
+    this.load.image('hook2', './hook2.png');
+    this.load.image('hook3', './hook3.png');
+    this.load.image('hook4', './hook4.png');
     for (let i = 1; i <= 4; i++) {
       this.load.image(`cursorFish ${i}`, `./cursor${i}.png`);
     }

@@ -202,28 +202,29 @@ export class UIManager {
   
         option.on('pointerdown', () => {
           if (this.gameManager.totalScore >= (i + 1) * 1024) {
-            this.gameManager.totalScore -= (i + 1) * 1024
-            this.updateScore(this.gameManager.totalScore, 0);
-            this.gameManager.perks[i] = true;
-            const effectText = this.scene.add.text(option.x, option.y,
-                `+1 ${text}`,
-                {
-                  fontSize:  `${fontRatio * 0.035}px`,
-                  fill: '#00ff00',
-                  fontStyle: 'bold'
-                }
-              ).setOrigin(0.5).setDepth(100); // float above
-        
-              this.scene.tweens.add({
-                targets: effectText,
-                y: effectText.y - 40,
-                alpha: 0,
-                duration: 3000,
-                ease: 'Cubic.easeOut',
-                onComplete: () => {
-                  effectText.destroy();
-                }
-              });
+                this.gameManager.totalScore -= (i + 1) * 1024
+                this.updateScore(this.gameManager.totalScore, 0);
+                this.gameManager.perks[i] = true;
+                const effectText = this.scene.add.text(option.x, option.y,
+                    `+1 ${text}`,
+                    {
+                      fontSize:  `${fontRatio * 0.035}px`,
+                      fill: '#00ff00',
+                      fontStyle: 'bold'
+                    }
+                  ).setOrigin(0.5).setDepth(100); // float above
+            
+                  this.scene.tweens.add({
+                    targets: effectText,
+                    y: effectText.y - 40,
+                    alpha: 0,
+                    duration: 3000,
+                    ease: 'Cubic.easeOut',
+                    onComplete: () => {
+                      effectText.destroy();
+                    }
+                  });
+              this.gameManager.bait.setTexture(`hook${i+2}`);
 
 
 
