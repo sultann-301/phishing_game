@@ -8,7 +8,7 @@ export class GameManager {
       this.isGameOver = false;
       this.setupBoatAndBait();
       this.spawnFish();
-      this.perks = [false,false,true];
+      this.perks = [false,false,false];
       this.resets = 3;
        this.lastX, this.lastY;
       this.trace = this.scene.add.graphics({ lineStyle: { width: 2, color: 0xffff04 } });
