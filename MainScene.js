@@ -92,6 +92,7 @@ export class MainScene extends Phaser.Scene {
     // });
 
     const graphics = this.add.graphics();
+    const adjuster = Math.min(1, window.innerHeight/window.innerWidth * 1.2)
     
 
     // Define the colors for each section
@@ -99,18 +100,16 @@ export class MainScene extends Phaser.Scene {
 
     // Define the vertical positions for the lines
     this.depthLines = [
-      window.innerHeight / 4,   // First line at 1/4 height
-      window.innerHeight / 2,   // Second line at 1/2 height
-      (window.innerHeight * 3) / 4 // Third line at 3/4 height
+      window.innerHeight / 4 + 5,   // First line at 1/4 height
+      window.innerHeight / 2 + 5,   // Second line at 1/2 height
+      (window.innerHeight * 3) / 4 + 5 // Third line at 3/4 height
     ];
     this.chances = ["High", "Medium", "Low"];
     // Loop through each section and draw colored rectangles
     this.depthLines.forEach((y, index) => {
       // Set the color for each section
       graphics.fillStyle(0x000000, opacities[index]); // Set opacity based on the section index
-      const fontRatio = Math.min(window.innerWidth, window.innerHeight);
 
-      
       // If it's the first section, draw it from the top of the screen to the first line
       if (index === 0) {
         graphics.fillRect(0, 0, this.game.config.width, y); // First section (top to first line)
@@ -127,12 +126,12 @@ export class MainScene extends Phaser.Scene {
       graphics.moveTo(0, y);
       graphics.lineTo(this.game.config.width, y);
       graphics.strokePath();
-
+      console.log(window.innerHeight)
       this.add.text(
         window.innerWidth/2,
-        this.depthLines[index] + 20,
+        this.depthLines[index] + 20 * (window.innerHeight / 800),
         `Lure chance: ${this.chances[index]}`,
-        { fontSize: `${Math.floor(fontRatio * 0.025)}px`, 
+        { fontSize: `${4 * adjuster}vmin`, 
                 fill: '#ffff04', 
                
                 

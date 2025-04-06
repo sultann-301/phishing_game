@@ -19,7 +19,7 @@ export class UIManager {
       const adjuster = Math.max(1, height/width)
       this.createGameOverScreen();
 
-      this.scoreText = this.scene.add.text(width / 2, 25, `Bytes:${this.gameManager.totalScore}`, {
+      this.scoreText = this.scene.add.text(width / 2, (25 / (adjuster !== 1 ? (550/height) : 1)) / adjuster, `Bytes:${this.gameManager.totalScore}`, {
         fontSize: '5vmin',
         fill: '#ffff04'
       }).setOrigin(0.5, 0.5);
@@ -101,7 +101,7 @@ export class UIManager {
     createButton(x, y, label, onDown, onUp = () => {}, phish = false) {
       const { width, height } = this.scene.game.config;
       const fontRatio = Math.min(width, height)
-      const adjuster = Math.min(1, width/height * 1.5)
+      const adjuster = Math.min(1, width/height * 1.1)
       const bg = this.scene.add.rectangle(x, y,phish ? width / (5.5 * adjuster) : width/5.5, height*adjuster/20 + 20, 0x355da4, 1).setInteractive();
       const outline = this.scene.add.graphics();
         outline.lineStyle(5, 0xffff04); // White outline, 2px thick

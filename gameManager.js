@@ -18,26 +18,44 @@ export class GameManager {
 
     setupBoatAndBait() {
       const { width, height } = this.scene.game.config;
+      const adjuster = Math.max(1, (width*1.1/height))
+      
+
+      const startPoint = new Phaser.Math.Vector2((width/2)+50*adjuster, (height/6) -12*adjuster);
+      const controlPoint1 = new Phaser.Math.Vector2(width / 2, (height/6)+40*adjuster);
+      const endPoint = new Phaser.Math.Vector2((width/2)-50*adjuster, (height/6) -12*adjuster);
       
 
       const boatSprite = this.scene.add.graphics({ fillStyle: { color: 0x355da4 }, lineStyle: {width: 5, color:0xffff04} });
 // Trapezium coordinates
+      this.curve = new Phaser.Curves.QuadraticBezier(startPoint, controlPoint1, endPoint);
+      
       boatSprite.beginPath();
-      boatSprite.moveTo((width/2)-60, (height/6) -15);  // Top left
-      boatSprite.lineTo((width/2) +60, (height/6)-15);  // Top right
-      boatSprite.lineTo((width/2)+25, (height/6) +15);  // Bottom right
-      boatSprite.lineTo((width/2)-25, (height/6) +15);  // Bottom left
+      boatSprite.moveTo(startPoint);  // Top left
+      boatSprite.lineTo(endPoint);  // Top right
+      const curvePoints = this.curve.getPoints(20); // Higher = smoother
+
+      // Move to first point
+      boatSprite.moveTo(curvePoints[0].x, curvePoints[0].y);
+
+      // Draw the curve manually
+      for (let i = 1; i < curvePoints.length; i++) {
+          boatSprite.lineTo(curvePoints[i].x, curvePoints[i].y);
+      }
+      // boatSprite.lineTo((width/2)+25, (height/6) +15);  // Bottom right
+      // boatSprite.lineTo((width/2)-25, (height/6) +15);  // Bottom left
       boatSprite.closePath();
       boatSprite.strokePath();
       boatSprite.fillPath();
+      
+      
             
-
 // optional: convert to texture so you can reuse it like a sprite
       boatSprite.generateTexture('boatShape', 60, 40);
 
       this.boat = this.scene.physics.add.sprite(width / 2, height / 6, "boatShape").setImmovable(true);
       
-      this.initialBaitY = this.boat.y + 30;
+      this.initialBaitY = this.boat.y + 20;
       this.bait = this.scene.physics.add.sprite(this.boat.x, this.initialBaitY, 'hook1');
       this.bait.setScale(0.03);
       this.bait.setCollideWorldBounds(true);
@@ -53,7 +71,7 @@ export class GameManager {
       for (let level = 1; level <= 3; level++) {
         for (let i = 0; i < 20; i++) {
           let x = Phaser.Math.Between(20, this.scene.game.config.width - 20);
-          let y = Phaser.Math.Between(level * height / 4 + 20, (level + 1) * height / 4 - 20);
+          let y = Phaser.Math.Between(((level * height / 4) + 15)  + (20 * (height / 800)), (level + 1) * height / 4 - 30);
           let type = Phaser.Math.Between(1, 4);
           
           let scaleIndex = Phaser.Math.Between(0, 4);
@@ -62,6 +80,7 @@ export class GameManager {
           fish.type = type;
           fish.setBounce(1);
           fish.setDepth(5);
+          fish.setOrigin(0.5, 0);
           fish.setCollideWorldBounds(true);
           fish.body.onWorldBounds = true;
           fish.body.setBoundsRectangle(new Phaser.Geom.Rectangle(100, 100, 600, 1400));
@@ -113,7 +132,7 @@ export class GameManager {
 
      
         // Draw line from last position to current position
-      this.trace.lineBetween(this.boat.x, this.boat.y, this.bait.x, this.bait.y - (this.bait.displayHeight / 4)).setDepth(2);
+      this.trace.lineBetween(this.boat.x, this.boat.y - 10, this.bait.x, this.bait.y - (this.bait.displayHeight / 4)).setDepth(2);
       
     
   
@@ -222,7 +241,7 @@ export class GameManager {
 
       if(this.perks[2]){
         let x = Phaser.Math.Between(200, this.scene.game.config.width - 200);
-        let y = Phaser.Math.Between(3 * height / 4 + 10, (3 + 1) * height / 4 - 10);
+        let y = Phaser.Math.Between((3 * height / 4 + 15) + (20 * (height / 800)), (3 + 1) * height / 4 - 30);
         let type = Phaser.Math.Between(1, 4);
     
         
