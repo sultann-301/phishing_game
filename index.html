@@ -31,7 +31,10 @@
       height: window.innerHeight,
       pixelArt:true,
       backgroundColor:"#002901",
-      antialias:true,
+      render: {
+        antialias: true,    // disable for pixel-art style
+        roundPixels: true    // helps align pixels for pixel-art
+      },
 
       physics: {
         default: 'arcade',

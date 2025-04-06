@@ -9,10 +9,10 @@ export class MainScene extends Phaser.Scene {
 
   preload() {
     // Load assets
-    this.load.image('hook1', './hook 1.png');
-    this.load.image('hook2', './hook2.png');
-    this.load.image('hook3', './hook3.png');
-    this.load.image('hook4', './hook4.png');
+    this.load.image('hook1', './hook1f.png');
+    this.load.image('hook2', './hook2f.png');
+    this.load.image('hook3', './hook3f.png');
+    this.load.image('hook4', './hook4f.png');
     for (let i = 1; i <= 4; i++) {
       this.load.image(`cursorFish ${i}`, `./cursor${i}.png`);
     }

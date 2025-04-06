@@ -114,7 +114,7 @@ export class GameManager {
 
      
         // Draw line from last position to current position
-      this.trace.lineBetween(this.boat.x, this.boat.y, this.bait.x, this.bait.y);
+      this.trace.lineBetween(this.boat.x, this.boat.y, this.bait.x, this.bait.y - (this.bait.displayHeight / 4));
       
     
   

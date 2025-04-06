@@ -16,66 +16,49 @@ export class UIManager {
   
     createUI() {
       const { width, height } = this.scene.game.config;
+      const adjuster = Math.max(1, height/width)
       this.createGameOverScreen();
 
-     this.scene.time.addEvent({
-      delay: 100,
-      loop: true,
-      callback: () => {
-        const {reelCount, totalScore, goalScore} = this.gameManager;
-        if(((reelCount <= 0 && totalScore < goalScore) || (totalScore >= goalScore))){
-
-            this.endScoreText.setText( `Your Score: ${totalScore} bytes`);
-            this.endGameText.setText(totalScore >= goalScore ? 'You Won :)' : 'You Lost :(');
-            this.endModalElems.forEach(elem => elem.setVisible(true));
-        }
-      }
-     })
-      
-  
-      this.scoreText = this.scene.add.text(width / 2, 25, 'Bytes:0', {
-        fontSize: '2rem',
+      this.scoreText = this.scene.add.text(width / 2, 25, `Bytes:${this.gameManager.totalScore}`, {
+        fontSize: '5vmin',
         fill: '#ffff04'
       }).setOrigin(0.5, 0.5);
   
       this.fishButton = this.createButton(width / 2, height / 11, 'Phish',
         () => {
-          if(this.gameManager.bait.y.toFixed(2) == this.gameManager.initialBaitY.toFixed(2))
+          if(this.gameManager.bait.y.toFixed(2) <= height / 4)
             {
-
-            this.gameManager.bait.body.setVelocityY(100); //problem in touch screen;
-            }
-            else {
-                console.log(`bait is currently at ${this.gameManager.bait.y} and the initial pos is ${this.gameManager.initialBaitY}`);
-                
-            }
-                
-                
+              this.shopButton.list[0].setAlpha(0.5);
+              this.tutButton.list[0].setAlpha(0.5);
+              this.fishButton.list[1].setText('Phishing..');
+              this.gameManager.bait.body.setVelocityY(100); //problem in touch screen;
+            }   
           this.gameManager.updateIdleFish();
         },
         () => {
           this.gameManager.bait.body.setVelocityY(0);
+          this.fishButton.list[1].setText('Phish');
           this.gameManager.updateIdleFish();
-        }
+          if(this.gameManager.bait.y.toFixed(2) > height / 4) this.fishButton.list[0].setAlpha(0.5);
+        }, true
       );
   
       this.resetButton = this.createButton(width * 9 / 10, height / 20, ` Reels \n   ${this.gameManager.reelCount}`,
-        () => {
-            
+        () => {            
             if(this.gameManager.bait.y.toFixed(2) != this.gameManager.initialBaitY.toFixed(2))
             {
+                this.shopButton.list[0].setAlpha(1);
+                this.tutButton.list[0].setAlpha(1);
+                this.fishButton.list[0].setAlpha(1);
                 this.gameManager.resetBait(this.resetButton);
                 this.resetButton.list[1].setText(` Reels \n   ${this.gameManager.reelCount}`)
                 this.gameManager.updateIdleFish();
             }
-            
-          
         }
       );
   
       this.shopButton = this.createButton(width / 10, height / 20, 'Shop',
         () => {
-          console.log(this.gameManager.bait.y + ' ' + this.gameManager.initialBaitY)
           if (this.gameManager.bait.y.toFixed(2) == this.gameManager.initialBaitY.toFixed(2) || this.gameManager.bait.body.velocity.y < 0) {
             this.openModal();
           }
@@ -87,12 +70,39 @@ export class UIManager {
           this.createInstructionsModal();
         }
       });
+
+      this.scene.time.addEvent({
+        delay: 100,
+        loop: true,
+        callback: () => {
+          const {reelCount, totalScore, goalScore} = this.gameManager;
+          if(((reelCount <= 0 && totalScore < goalScore) || (totalScore >= goalScore))){
+  
+              this.endScoreText.setText( `Your Score: ${totalScore} bytes`);
+              this.endGameText.setText(totalScore >= goalScore ? 'You Won :)' : 'You Lost :(');
+              this.endModalElems.forEach(elem => elem.setVisible(true));
+              this.shopButton.list[0].setAlpha(0.5);
+              this.tutButton.list[0].setAlpha(0.5);
+              this.fishButton.list[0].setAlpha(0.5);
+              this.resetButton.list[0].setAlpha(0.5);
+              this.fishButton.list[0].disableInteractive();
+              this.tutButton.list[0].disableInteractive();
+              this.shopButton.list[0].disableInteractive();
+              this.resetButton.list[0].disableInteractive();
+              this.fishButton.list[1].disableInteractive();
+              this.tutButton.list[1].disableInteractive();
+              this.shopButton.list[1].disableInteractive();
+              this.resetButton.list[1].disableInteractive();
+          }
+        }
+       })
     }
   
-    createButton(x, y, label, onDown, onUp = () => {}) {
+    createButton(x, y, label, onDown, onUp = () => {}, phish = false) {
       const { width, height } = this.scene.game.config;
       const fontRatio = Math.min(width, height)
-      const bg = this.scene.add.rectangle(x, y,width/5.5, height/20 + 20, 0x355da4).setInteractive();
+      const adjuster = Math.min(1, width/height * 1.5)
+      const bg = this.scene.add.rectangle(x, y,phish ? width / (5.5 * adjuster) : width/5.5, height*adjuster/20 + 20, 0x355da4).setInteractive();
       const outline = this.scene.add.graphics();
         outline.lineStyle(5, 0xffff04); // White outline, 2px thick
         outline.strokeRect(
@@ -114,16 +124,16 @@ export class UIManager {
   
     updateScore(score, increase) {
       this.scoreText.setText(`Bytes:${score}`);
-      const { width } = this.scene.game.config;
-
+      const { height, width } = this.scene.game.config;
+      const adjuster = Math.max(1, height/width)
       if (increase > 0){
         const effectText = this.scene.add.text(
-          this.scoreText.x + 100, // adjust right of score
-          this.scoreText.y,
+          this.scoreText.x + width/8, // adjust right of score
+          this.scoreText.y + 10,
           `+${increase}`,
           {
-            fontSize: '1rem',
-            fill: increase == 1024*4 ? '#d4af37' : '#ffff04',
+            fontSize: '5vmin',
+            fill: increase == 4096 ? '#d4af37' : '#ffff04',
             fontStyle: 'bold'
           }
         ).setOrigin(0, 0.5).setDepth(100); // float above
@@ -147,51 +157,52 @@ export class UIManager {
       const { centerX, centerY } = this.scene.cameras.main;
       const { width, height } = this.scene.game.config;
       const fontRatio = Math.min(width, height)
+      const adjuster = Math.min(1, height/width * 1.2)
   
       this.modalBackground = this.scene.add.graphics()
         .fillStyle(0x000000, 0.9)
-        .fillRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
+        .fillRect(centerX - width * 3 / 8 - 20, centerY - height / 3, width * 3 / 4 + 40, height * 2 / 3)
         .lineStyle(4, 0xffff04)
-        .strokeRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
+        .strokeRect(centerX - width * 3 / 8 - 20, centerY - height / 3, width * 3 / 4 + 40, height * 2 / 3)
         .setVisible(false).setDepth(10);
       this.modalTitle = this.scene.add.text(centerX, centerY - height / 4 - 20, 'SHOP', {
-        fontSize: '7em', fill: '#ffffff'
+        fontSize: '7vmin', fill: '#ffffff'
       }).setOrigin(0.5).setVisible(false).setDepth(11);
   
       const options = ['Website Spoofing', 'Malicious Link Phishing', 'Spear Phishing'];
-      const details = ['The creation of a fake website that imitates a legitimate one to trick users into entering sensitive information. The fake website usually has a URL nearly identical to the site being imitated making it difficult to spot.\n\n(This boost will increase the probability of fish getting lured to your bait)', 
-                        'A deceptive tactic where attackers send emails or messages with dangerous links that lead to fraudulent sites or trigger malware downloads. If done correctly, it could harm many people as they share the malicious message with each other.\n\n(This boost will make the first fish you catch spawn 8 identical fish nearby which you are guaranteed to catch)',
-                        ' A targeted phishing attack that uses personalized information to deceive specific individuals into revealing confidential data or credentials. It could be of grave consequences if the person targetted is an executive in an important company (e.g CEO).\n\n(This boost will spawn a golden fish having 4096 BYTES in the bottom layer which is guaranteed to be caught.)']
+      const details = ['The creation of a fake website that imitates a legitimate one to trick users into entering sensitive information. \n\n(This boost will increase the probability of fish getting lured to your bait)', 
+                        'A deceptive tactic where attackers send emails or messages with dangerous links that lead to fraudulent sites or trigger malware downloads. \n\n(This boost will make the first fish you catch spawn 8 identical fish nearby which you are guaranteed to catch)',
+                        ' A targeted phishing attack that uses personalized information to deceive specific individuals (usually company executives) into revealing confidential data. \n\n(This boost will spawn a golden fish having 4096 BYTES in the bottom layer which is guaranteed to be caught.)']
       this.modalOptions = [];
       this.modalDetails = [];
   
       options.forEach((text, i) => {
         let option = this.scene.add.text(
           centerX,
-          centerY - height / 6 + i * height / 6,
+          centerY - height / 6 + i * height / 5.8,
           `${text} (${(i + 1) * 1024} bytes)`,
           { fontSize: `${fontRatio * 0.035}px`, 
             fill: '#00ff00', 
             wordWrap: {
-            width: width * 0.6
+            width: width * 0.8
             } 
           }
         ).setInteractive().setVisible(false).setDepth(11).setOrigin(0.5);
 
         let detail = this.scene.add.text(
           centerX - width / 3,
-          centerY - height / 8 + i * height / 6,
+          centerY - height / 7.5 + i * height / 6,
           `${details[i]}\n`,
-          { fontSize: `${fontRatio * 0.018}px`, 
+          { fontSize: `${2.4 * adjuster}vmin`, 
             fill: '#e7e304', 
             wordWrap: {
-            width: width * 0.6
+            width: width * 0.67
             } 
           }
         ).setInteractive().setVisible(false).setDepth(11).setOrigin(-0.03,0);
   
         option.on('pointerover', () => {
-            if (this.gameManager.totalScore >= (i + 1) * 1024)
+            if (this.gameManager.totalScore >= (i + 1) * 1024 && !this.gameManager.perks.reduce((a, b) => a || b))
             {
                 option.setStyle({ fill: '#ff9900' })
             } else {
@@ -201,7 +212,7 @@ export class UIManager {
         option.on('pointerout', () => option.setStyle({ fill: '#00ff00' }));
   
         option.on('pointerdown', () => {
-          if (this.gameManager.totalScore >= (i + 1) * 1024) {
+          if (this.gameManager.totalScore >= (i + 1) * 1024 && !this.gameManager.perks.reduce((a, b) => a || b)) {
                 this.gameManager.totalScore -= (i + 1) * 1024
                 this.updateScore(this.gameManager.totalScore, 0);
                 this.gameManager.perks[i] = true;
@@ -268,6 +279,8 @@ export class UIManager {
       this.scene.time.timeScale = 0;
       this.fishButton.list[0].disableInteractive();
       this.tutButton.list[0].disableInteractive();
+      // this.fishButton.list[0].setAlpha(0.5);
+      // this.tutButton.list[0].setAlpha(0.5);
       this.fishButton.list[1].disableInteractive();
       this.tutButton.list[1].disableInteractive();
     }
@@ -281,6 +294,8 @@ export class UIManager {
       this.scene.time.timeScale = 1;
       this.fishButton.list[0].setInteractive();
       this.tutButton.list[0].setInteractive();
+      // this.fishButton.list[0].setAlpha(1);
+      // this.tutButton.list[0].setAlpha(1);
       this.fishButton.list[1].setInteractive();
       this.tutButton.list[1].setInteractive();
     }
@@ -300,17 +315,18 @@ export class UIManager {
     
       // Title
       this.instructionsTitle = this.scene.add.text(centerX, centerY - height / 4 + 15, 'Tips', {
-        fontSize: '6em',
-        fill: '#ffff04'
+        fontSize: '9vmin',
+        fill: '#ffffff'
       }).setOrigin(0.5).setDepth(11);
 
       // Instructions text block
       const instructionsText = 
       "\n\n\n\n🪝 Tap & Hold to 'Phish' &  drop your bait!\n\n" +
-      "💰 Earn Bytes by catching fish.\n\n" +
-      "🛍️ Use Bytes to unlock new phishing techniques.\n\n" +
-      "🌊 The deeper you go, the more aware the fish are of your tactics.\n\n" +
-      "🔁 Only 3 reels, so choose where you want to phish wisely.\n\n" +
+      "💰 Earn Bytes by catching fish!\n\n" +
+      "🛍️ Use Bytes to unlock new phishing techniques (boosts)!\n\n" +
+      "🔒 Only one boost is allowed per reel!\n\n" +
+      "🌊 The deeper you go, the more aware the fish are of your tactics!\n\n" +
+      "🔁 Only 3 reels, so choose where you want to phish wisely!\n\n" +
       `🏆 You need ${this.gameManager.goalScore} Bytes to win. Good luck!`;
     
       this.instructionsBody = this.scene.add.text(
@@ -318,7 +334,7 @@ export class UIManager {
         centerY,
         instructionsText,
         {
-          fontSize: `${fontRatio * 0.035}px`,
+          fontSize: `${fontRatio * 0.03}px`,
           fill: '#ffff04',
           align: 'center',
           wordWrap: { width: width * 0.6 }
@@ -338,8 +354,10 @@ export class UIManager {
         this.instructionsCloseButton.setVisible(false);
         this.fishButton.list[0].setInteractive();
         this.shopButton.list[0].setInteractive();
-        this.fishButton.list[1].disableInteractive();
-        this.fishButton.list[1].disableInteractive();
+        // this.fishButton.list[0].setAlpha(1);
+        // this.shopButton.list[0].setAlpha(1);
+        this.fishButton.list[1].setInteractive();
+        this.shopButton.list[1].setInteractive();
         this.scene.time.timeScale = 1;
       });
     
@@ -351,6 +369,8 @@ export class UIManager {
       this.scene.time.timeScale = 0;
       this.fishButton.list[0].disableInteractive();
       this.shopButton.list[0].disableInteractive();
+      // this.fishButton.list[0].setAlpha(0.5);
+      // this.shopButton.list[0].setAlpha(0.5);
       this.fishButton.list[1].disableInteractive();
       this.shopButton.list[1].disableInteractive()
 
@@ -367,7 +387,7 @@ export class UIManager {
             this.modalBackground = this.scene.add.graphics()
               .fillStyle(0x000000, 0.9)
               .fillRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
-              .lineStyle(4, 0x00ff00)
+              .lineStyle(4, 0xffff04)
               .strokeRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
               .setVisible(false).setDepth(11);
         
@@ -411,8 +431,8 @@ export class UIManager {
               }
             ).setInteractive().setVisible(false).setDepth(15).setOrigin(0.5).on('pointerdown', () => {window.location.reload()})
             
-            this.againButton.on('pointerover', () => this.againButton.setStyle({ fill: '#ffff00'}))
-            this.againButton.on('pointerout', () => this.againButton.setStyle({ fill: '#00ff00'}))
+            this.againButton.on('pointerover', () => this.againButton.setStyle({ fill: '#00ff00'}))
+            this.againButton.on('pointerout', () => this.againButton.setStyle({ fill: '#ffff04'}))
 
             this.endModalElems.push(this.modalBackground, this.modalTitle, this.endGameText, this.againButton,this.endScoreText);
           
