@@ -80,7 +80,6 @@ export class GameManager {
           fish.type = type;
           fish.setBounce(1);
           fish.setDepth(5);
-          fish.setOrigin(0.5, 0);
           fish.setCollideWorldBounds(true);
           fish.body.onWorldBounds = true;
           fish.body.setBoundsRectangle(new Phaser.Geom.Rectangle(100, 100, 600, 1400));
