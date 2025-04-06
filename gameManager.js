@@ -19,11 +19,14 @@ export class GameManager {
     setupBoatAndBait() {
       const { width, height } = this.scene.game.config;
       const adjuster = Math.max(1, (width*1.1/height))
+      const adjuster2 = Math.min(1, width/height * 1.1)
+      const boatWidth = width / (5 * adjuster2);
+      console.log(boatWidth);
       
 
-      const startPoint = new Phaser.Math.Vector2((width/2)+50*adjuster, (height/6) -12*adjuster);
+      const startPoint = new Phaser.Math.Vector2(width/2 - boatWidth/2, (height/6) -7*adjuster);
       const controlPoint1 = new Phaser.Math.Vector2(width / 2, (height/6)+40*adjuster);
-      const endPoint = new Phaser.Math.Vector2((width/2)-50*adjuster, (height/6) -12*adjuster);
+      const endPoint = new Phaser.Math.Vector2(width/2 + boatWidth/2, (height/6) -7*adjuster);
       
 
       const boatSprite = this.scene.add.graphics({ fillStyle: { color: 0x355da4 }, lineStyle: {width: 5, color:0xffff04} });
@@ -53,7 +56,7 @@ export class GameManager {
 // optional: convert to texture so you can reuse it like a sprite
       boatSprite.generateTexture('boatShape', 60, 40);
 
-      this.boat = this.scene.physics.add.sprite(width / 2, height / 6, "boatShape").setImmovable(true);
+      this.boat = this.scene.physics.add.sprite(width / 2, height / 6, "boatShape");
       
       this.initialBaitY = this.boat.y + 20;
       this.bait = this.scene.physics.add.sprite(this.boat.x, this.initialBaitY, 'hook1');
@@ -61,6 +64,15 @@ export class GameManager {
       this.bait.setCollideWorldBounds(true);
       this.boat.setDepth(2);
       this.bait.setDepth(2);
+
+      this.scene.tweens.add({
+        targets: [boatSprite, this.bait],
+        x: "+=5",  
+        ease: 'Sine.easeOutIn',  // Ease type
+        duration: 1000,  // Duration of each movement
+        repeat: -1,  // Loop forever
+        yoyo: true  // Make the boat move back and forth
+      });
     }
   
     spawnFish() {
@@ -100,7 +112,7 @@ export class GameManager {
           targets: this.bait,
           y: this.initialBaitY,
           ease: 'Linear',
-          duration: 1000,
+          duration: 750,
           onStart: () =>{ 
           resetButton.list[0].disableInteractive();
           resetButton.list[1].disableInteractive()
@@ -128,7 +140,7 @@ export class GameManager {
         this.bait.y = this.initialBaitY;
       }
       this.trace.clear();
-
+      this.applyProbBoost();
      
         // Draw line from last position to current position
       this.trace.lineBetween(this.boat.x, this.boat.y - 10, this.bait.x, this.bait.y - (this.bait.displayHeight / 4)).setDepth(2);
@@ -196,7 +208,7 @@ export class GameManager {
     {
       if(this.perks[0])
       {
-        this.fishes.iterate(fish => fish.moveChance += 0.15);
+        this.fishes.children.iterate(fish => fish.moveChance += 0.2);
         this.perks[0] = !this.perks[0];
       }
     }

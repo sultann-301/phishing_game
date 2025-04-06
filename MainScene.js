@@ -9,6 +9,17 @@ export class MainScene extends Phaser.Scene {
 
   preload() {
     // Load assets
+    const font = new FontFace('JoyStix', 'url(./joystix.ttf)');
+    font.load().then(() => {
+      document.fonts.add(font);  // Add the font to the document
+      console.log('Font loaded');
+      
+      // Notify that the font has been loaded and switch to the main scene
+      this.sys.game.events.emit('font-loaded');
+    }).catch((error) => {
+      console.error('Font failed to load:', error);
+    });
+  
     this.load.image('hook1', './hook1f.png');
     this.load.image('hook2', './hook2f.png');
     this.load.image('hook3', './hook3f.png');
@@ -126,13 +137,14 @@ export class MainScene extends Phaser.Scene {
       graphics.moveTo(0, y);
       graphics.lineTo(this.game.config.width, y);
       graphics.strokePath();
-      console.log(window.innerHeight)
+      //console.log(window.innerHeight)
       this.add.text(
         window.innerWidth/2,
         this.depthLines[index] + 20 * (window.innerHeight / 800),
         `Lure chance: ${this.chances[index]}`,
         { fontSize: `${4 * adjuster}vmin`, 
-                fill: '#ffff04', 
+          fontFamily:"JoyStix",
+          fill: '#ffff04', 
                
                 
 
@@ -165,7 +177,6 @@ export class MainScene extends Phaser.Scene {
       quantity: 6,
       blendMode: 'ADD'
   });
-
 
   }
 

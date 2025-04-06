@@ -8,8 +8,6 @@ export class UIManager {
       this.tutButton = null
       this.shopButton = null;
       this.endModalElems = [];
-
-  
       this.createUI();
       this.createModal();
     }
@@ -19,9 +17,11 @@ export class UIManager {
       const adjuster = Math.max(1, height/width)
       this.createGameOverScreen();
 
-      this.scoreText = this.scene.add.text(width / 2, (25 / (adjuster !== 1 ? (550/height) : 1)) / adjuster, `Bytes:${this.gameManager.totalScore}`, {
+      this.scoreText = this.scene.add.text(width / 2, (25 / (adjuster !== 1 ? (550/height) : 1.35)) / adjuster, `Bytes:${this.gameManager.totalScore}`, {
         fontSize: '5vmin',
-        fill: '#ffff04'
+        fontFamily:"JoyStix",
+        fill: '#ffff04',
+        fontFamily:"Joystix",
       }).setOrigin(0.5, 0.5);
   
       this.fishButton = this.createButton(width / 2, height / 11, 'Phish',
@@ -43,7 +43,7 @@ export class UIManager {
         }, true
       );
   
-      this.resetButton = this.createButton(width *  0.88, height / 20, ` Reels \n   ${this.gameManager.reelCount}`,
+      this.resetButton = this.createButton(width *  0.85, height / 20, `Reels\n  ${this.gameManager.reelCount}`,
         () => {            
             if(this.gameManager.bait.y.toFixed(2) != this.gameManager.initialBaitY.toFixed(2))
             {
@@ -51,7 +51,7 @@ export class UIManager {
                 this.tutButton.list[0].setAlpha(1);
                 this.fishButton.list[0].setAlpha(1);
                 this.gameManager.resetBait(this.resetButton);
-                this.resetButton.list[1].setText(` Reels \n   ${this.gameManager.reelCount}`)
+                this.resetButton.list[1].setText(`Reels\n  ${this.gameManager.reelCount}`)
                 this.gameManager.updateIdleFish();
             }
         }
@@ -65,7 +65,7 @@ export class UIManager {
         }
       );
 
-      this.tutButton = this.createButton(width * 0.12, height/7, "How to play", () => {
+      this.tutButton = this.createButton(width * 0.12, height/6.5, "Rules", () => {
         if (this.gameManager.bait.y.toFixed(2) == this.gameManager.initialBaitY.toFixed(2)) {
           this.createInstructionsModal();
         }
@@ -97,21 +97,22 @@ export class UIManager {
         }
        })
     }
+
   
     createButton(x, y, label, onDown, onUp = () => {}, phish = false) {
       const { width, height } = this.scene.game.config;
       const fontRatio = Math.min(width, height)
       const adjuster = Math.min(1, width/height * 1.1)
-      const bg = this.scene.add.rectangle(x, y,phish ? width / (5.5 * adjuster) : width/5.5, height*adjuster/20 + 20, 0x355da4, 1).setInteractive();
+      const bg = this.scene.add.rectangle(x, y,phish ? width / (5 * adjuster) : width/5.5, phish ? (height*adjuster/20 + 20) :  height*adjuster/20 + 30*500/height, 0x355da4, 1).setInteractive();
       const outline = this.scene.add.graphics();
-        outline.lineStyle(5, 0xffff04); // White outline, 2px thick
+        outline.lineStyle(3, 0xffff04); // White outline, 2px thick
         outline.strokeRect(
-        bg.x - bg.width / 2,
-        bg.y - bg.height / 2,
-        bg.width,
-        bg.height
+        bg.x - bg.width / 2 -1.5,
+        bg.y - bg.height / 2 -1.5,
+        bg.width +3,
+        bg.height +3
         );
-      const text = this.scene.add.text(x, y, label, { fontSize: `${fontRatio * 0.035}px`, color: '#ffff04',  wordWrap: {width: width/5.5}})
+      const text = this.scene.add.text(x, y, label, { fontSize: `${fontRatio * 0.035}px`, fontFamily:"JoyStix", color: '#ffff04',  wordWrap: {width: width/5.5}})
       .setOrigin(0.5);
       const container = this.scene.add.container(0, 0, [bg, text]);
       text.setInteractive();
@@ -132,6 +133,7 @@ export class UIManager {
           this.scoreText.y + 10,
           `+${increase}`,
           {
+            fontFamily:"JoyStix",
             fontSize: '5vmin',
             fill: increase == 4096 ? '#d4af37' : '#ffff04',
             fontStyle: 'bold'
@@ -161,12 +163,12 @@ export class UIManager {
   
       this.modalBackground = this.scene.add.graphics()
         .fillStyle(0x000000, 0.9)
-        .fillRect(centerX - width * 3 / 8 - 20, centerY - height / 3, width * 3 / 4 + 40, height * 2 / 3)
+        .fillRect(centerX - width * 3 / 8 - 20, centerY - height / 3, width * 3 / 4 + 40, height * 2 / 2.5)
         .lineStyle(4, 0xffff04)
-        .strokeRect(centerX - width * 3 / 8 - 20, centerY - height / 3, width * 3 / 4 + 40, height * 2 / 3)
+        .strokeRect(centerX - width * 3 / 8 - 20, centerY - height / 3, width * 3 / 4 + 40, height * 2 / 2.5)
         .setVisible(false).setDepth(10);
       this.modalTitle = this.scene.add.text(centerX, centerY - height / 4 - 20, 'SHOP', {
-        fontSize: '7vmin', fill: '#ffffff'
+        fontSize: '7vmin', fontFamily:"JoyStix", fill: '#ffffff'
       }).setOrigin(0.5).setVisible(false).setDepth(11);
   
       const options = ['Website Spoofing', 'Malicious Link Phishing', 'Spear Phishing'];
@@ -179,10 +181,11 @@ export class UIManager {
       options.forEach((text, i) => {
         let option = this.scene.add.text(
           centerX,
-          centerY - height / 6 + i * height / 5.8,
+          centerY - height / 6 + i * height / 5.2,
           `${text} (${(i + 1) * 1024} bytes)`,
           { fontSize: `${fontRatio * 0.035}px`, 
             fill: '#00ff00', 
+            fontFamily: "JoyStix",
             wordWrap: {
             width: width * 0.8
             } 
@@ -191,9 +194,10 @@ export class UIManager {
 
         let detail = this.scene.add.text(
           centerX - width / 3,
-          centerY - height / 7.5 + i * height / 6,
+          centerY - height / 7.5 + i * height / 5.35,
           `${details[i]}\n`,
           { fontSize: `${2.4 * adjuster}vmin`, 
+          fontFamily:"JoyStix",
             fill: '#e7e304', 
             wordWrap: {
             width: width * 0.67
@@ -220,6 +224,7 @@ export class UIManager {
                     `+1 ${text}`,
                     {
                       fontSize:  `${fontRatio * 0.035}px`,
+                      fontFamily:"JoyStix",
                       fill: '#00ff00',
                       fontStyle: 'bold'
                     }
@@ -263,7 +268,7 @@ export class UIManager {
       });
   
       this.closeButton = this.scene.add.text(centerX + width / 3 - 20, centerY - height / 4 - 20, 'X', {
-        fontSize: '48px', fill: '#ff0000'
+        fontSize: '48px', fontFamily:"JoyStix", fill: '#ff0000'
       }).setOrigin(0.5).setInteractive().setVisible(false).setDepth(11);
   
       this.closeButton.on('pointerdown', () => this.closeModal());
@@ -308,14 +313,15 @@ export class UIManager {
       // Dark semi-transparent background
       this.instructionsBackground = this.scene.add.graphics()
         .fillStyle(0x000000, 0.9)
-        .fillRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
+        .fillRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 2.7)
         .lineStyle(4, 0xffff04)
-        .strokeRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 3)
+        .strokeRect(centerX - width * 3 / 8, centerY - height / 3, width * 3 / 4, height * 2 / 2.7)
         .setDepth(10);
     
       // Title
-      this.instructionsTitle = this.scene.add.text(centerX, centerY - height / 4 + 15, 'Tips', {
+      this.instructionsTitle = this.scene.add.text(centerX, centerY - height / 3.8  , 'Rules', {
         fontSize: '9vmin',
+        fontFamily:"JoyStix",
         fill: '#ffffff'
       }).setOrigin(0.5).setDepth(11);
 
@@ -335,6 +341,7 @@ export class UIManager {
         instructionsText,
         {
           fontSize: `${fontRatio * 0.03}px`,
+          fontFamily:"JoyStix",
           fill: '#ffff04',
           align: 'center',
           wordWrap: { width: width * 0.6 }
@@ -342,8 +349,9 @@ export class UIManager {
       ).setOrigin(0.5).setDepth(11);
     
       // Close button
-      this.instructionsCloseButton = this.scene.add.text(centerX + width / 3 - 20, centerY - height / 4 + 15, 'X', {
+      this.instructionsCloseButton = this.scene.add.text(centerX + width / 3 - 20, centerY - height / 3.8 , 'X', {
         fontSize: '48px',
+        fontFamily:"JoyStix",
         fill: '#ff0000'
       }).setOrigin(0.5).setInteractive().setDepth(11);
     
@@ -392,7 +400,7 @@ export class UIManager {
               .setVisible(false).setDepth(11);
         
             this.modalTitle = this.scene.add.text(centerX, centerY - height / 4 - 20, 'GAME OVER', {
-              fontSize: `${fontRatio * 0.08}px`, fill: '#ffff04'
+              fontSize: `${fontRatio * 0.08}px`, fontFamily:"JoyStix", fill: '#ffff04'
             }).setOrigin(0.5).setVisible(false).setDepth(11);
 
             this.endGameText = this.scene.add.text(
@@ -400,6 +408,7 @@ export class UIManager {
               centerY - height / 10,
               totalScore >= goalScore ? 'You Won :)' : 'You Lost :(',
               { fontSize: `${fontRatio * 0.05}px`, 
+                fontFamily:"JoyStix",
                 fill: '#ffff04', 
                 wordWrap: {
                 width: width * 0.6
@@ -412,6 +421,7 @@ export class UIManager {
               centerY + height / 15,
               `Your Score: ${totalScore} bytes`,
               { fontSize: `${Math.floor(fontRatio * 0.035)}px`, 
+                fontFamily:"JoyStix",
                 fill: '#ffff04', 
                 wordWrap: {
                 width: width * 0.6
@@ -425,6 +435,7 @@ export class UIManager {
               `Play Again`,
               { fontSize: `${Math.floor(fontRatio * 0.035)}px`, 
                 fill: '#ffff04', 
+                fontFamily:"JoyStix",
                 wordWrap: {
                 width: width * 0.6
                 } 

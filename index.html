@@ -15,41 +15,49 @@
       display: block;
       margin: 0 auto;
     }
+    @font-face {
+    font-family: 'JoyStix';
+    src: url('joystix.ttf') format('truetype');
+}
   </style>
 </head>
 <body>
   <!-- Load Phaser -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+
 
   <!-- Start the game via ES Module -->
   <script type="module">
     import { MainScene } from './MainScene.js';
+    document.fonts.ready.then(() => {
+          const config = {
+          type: Phaser.AUTO,
+          width: window.innerWidth,
+          height: window.innerHeight,
+          pixelArt:true,
+          backgroundColor:"#002901",
+          render: {
+            antialias: true,    // disable for pixel-art style
+            roundPixels: true    // helps align pixels for pixel-art
+          },
 
-    const config = {
-      type: Phaser.AUTO,
-      width: window.innerWidth,
-      height: window.innerHeight,
-      pixelArt:true,
-      backgroundColor:"#002901",
-      render: {
-        antialias: true,    // disable for pixel-art style
-        roundPixels: true    // helps align pixels for pixel-art
-      },
+          physics: {
+            default: 'arcade',
 
-      physics: {
-        default: 'arcade',
-
-        arcade: {
-          gravity: { y: 0 },
-          debug: false,
-        }
-      },
-      scene: [MainScene]
-    };
+            arcade: {
+              gravity: { y: 0 },
+              debug: false,
+            }
+          },
+          scene: [MainScene]
+        };
 
 
-    new Phaser.Game(config);
+        new Phaser.Game(config);
 
+});
+    
 
   </script>
 </body>
