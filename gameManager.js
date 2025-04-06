@@ -41,10 +41,8 @@ export class GameManager {
       this.bait = this.scene.physics.add.sprite(this.boat.x, this.initialBaitY, 'hook1');
       this.bait.setScale(0.03);
       this.bait.setCollideWorldBounds(true);
-
-
-
-
+      this.boat.setDepth(2);
+      this.bait.setDepth(2);
     }
   
     spawnFish() {
@@ -63,6 +61,7 @@ export class GameManager {
             .setScale((type === 1 || type === 4) ? 0.06 * sizeFactors[scaleIndex] : 0.01 * sizeFactors[scaleIndex]);
           fish.type = type;
           fish.setBounce(1);
+          fish.setDepth(5);
           fish.setCollideWorldBounds(true);
           fish.body.onWorldBounds = true;
           fish.body.setBoundsRectangle(new Phaser.Geom.Rectangle(100, 100, 600, 1400));
@@ -114,7 +113,7 @@ export class GameManager {
 
      
         // Draw line from last position to current position
-      this.trace.lineBetween(this.boat.x, this.boat.y, this.bait.x, this.bait.y - (this.bait.displayHeight / 4));
+      this.trace.lineBetween(this.boat.x, this.boat.y, this.bait.x, this.bait.y - (this.bait.displayHeight / 4)).setDepth(2);
       
     
   

@@ -43,7 +43,7 @@ export class UIManager {
         }, true
       );
   
-      this.resetButton = this.createButton(width * 9 / 10, height / 20, ` Reels \n   ${this.gameManager.reelCount}`,
+      this.resetButton = this.createButton(width *  0.88, height / 20, ` Reels \n   ${this.gameManager.reelCount}`,
         () => {            
             if(this.gameManager.bait.y.toFixed(2) != this.gameManager.initialBaitY.toFixed(2))
             {
@@ -57,7 +57,7 @@ export class UIManager {
         }
       );
   
-      this.shopButton = this.createButton(width / 10, height / 20, 'Shop',
+      this.shopButton = this.createButton(width * 0.12, height / 20, 'Shop',
         () => {
           if (this.gameManager.bait.y.toFixed(2) == this.gameManager.initialBaitY.toFixed(2) || this.gameManager.bait.body.velocity.y < 0) {
             this.openModal();
@@ -65,7 +65,7 @@ export class UIManager {
         }
       );
 
-      this.tutButton = this.createButton(width/10, height/7, "How to play", () => {
+      this.tutButton = this.createButton(width * 0.12, height/7, "How to play", () => {
         if (this.gameManager.bait.y.toFixed(2) == this.gameManager.initialBaitY.toFixed(2)) {
           this.createInstructionsModal();
         }
@@ -102,7 +102,7 @@ export class UIManager {
       const { width, height } = this.scene.game.config;
       const fontRatio = Math.min(width, height)
       const adjuster = Math.min(1, width/height * 1.5)
-      const bg = this.scene.add.rectangle(x, y,phish ? width / (5.5 * adjuster) : width/5.5, height*adjuster/20 + 20, 0x355da4).setInteractive();
+      const bg = this.scene.add.rectangle(x, y,phish ? width / (5.5 * adjuster) : width/5.5, height*adjuster/20 + 20, 0x355da4, 1).setInteractive();
       const outline = this.scene.add.graphics();
         outline.lineStyle(5, 0xffff04); // White outline, 2px thick
         outline.strokeRect(
