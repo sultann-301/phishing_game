@@ -3,7 +3,7 @@ export class GameManager {
     constructor(scene) {
       this.scene = scene;
       this.totalScore = 0;
-      this.goalScore = 5500;
+      this.goalScore =5500;
       this.reelCount = 3;
       this.isGameOver = false;
       this.setupBoatAndBait();
@@ -133,7 +133,18 @@ export class GameManager {
             let angle = Phaser.Math.Angle.Between(fish.x, fish.y, this.bait.x, this.bait.y);
             let wiggle = Math.sin(this.scene.time.now * 0.006 * 10) * 90;
             fish.setVelocity(50 * Math.cos(angle) + wiggle, 50 * Math.sin(angle));
-            fish.isAttracted = true;
+            const emitter = this.scene.add.particles(fish.x, fish.y, 'water_particle', {
+              scale: fish.score == 1024*4 ? { start: 1.1, end: 0 }:{ start:0.75 , end: 0 },
+              angle: { min: 0, max: 180 },
+              speed: 100,
+              lifespan: fish.score == 1024*4 ? 400: 80,
+              tint: fish.score == 1024*4 ? 0xFFD700 : 0xffffff , // 💛 Gold if 1024, white otherwise
+              quantity: fish.score == 1024*4 ? 5 : 2
+            });
+
+            this.scene.time.delayedCall(600, () => {
+              emitter.stop();
+          });
     
             if (Phaser.Math.Distance.Between(fish.x, fish.y, this.bait.x, this.bait.y) < 20) {
               this.totalScore += fish.score;
@@ -141,13 +152,14 @@ export class GameManager {
               fish.disableBody(true, true);
               this.applySpawnPhishes(fish);
               const emitter = this.scene.add.particles(fish.x, fish.y, 'spark', {
-                scale: fish.score == 1024 ? 0.04 : 0.03,
+                scale: fish.score == 1024*4 ? 0.04 : 0.03,
                 angle: { min: 0, max: 360 },
                 speed: fish.score == 1024*4 ? 400 : 200,
                 lifespan:fish.score == 1024*4 ? 800 : 100,
                 tint: fish.score == 1024*4 ? 0xFFD700 : 0xffff04 , // 💛 Gold if 1024, white otherwise
                 quantity: fish.score == 1024*4 ? 100 : 10
               });
+
   
               this.scene.time.delayedCall(400, () => {
                 emitter.stop();
@@ -224,6 +236,8 @@ export class GameManager {
         fish.moveChance = 1;
         fish.setVelocity(Phaser.Math.Between(-50, 50), 0);
         fish.setTint("0xd4af37");
+        fish.setDepth(5);
+
         this.fishes.add(fish);
 
         this.perks[2] = !this.perks[2];

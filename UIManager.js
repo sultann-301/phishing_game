@@ -31,7 +31,7 @@ export class UIManager {
               this.shopButton.list[0].setAlpha(0.5);
               this.tutButton.list[0].setAlpha(0.5);
               this.fishButton.list[1].setText('Phishing..');
-              this.gameManager.bait.body.setVelocityY(100); //problem in touch screen;
+              this.gameManager.bait.body.setVelocityY(200); //problem in touch screen;
             }   
           this.gameManager.updateIdleFish();
         },
@@ -325,7 +325,7 @@ export class UIManager {
       "💰 Earn Bytes by catching fish!\n\n" +
       "🛍️ Use Bytes to unlock new phishing techniques (boosts)!\n\n" +
       "🔒 Only one boost is allowed per reel!\n\n" +
-      "🌊 The deeper you go, the more aware the fish are of your tactics!\n\n" +
+      "🌊 Use the Reel Button to bring your bait back!\n\n" +
       "🔁 Only 3 reels, so choose where you want to phish wisely!\n\n" +
       `🏆 You need ${this.gameManager.goalScore} Bytes to win. Good luck!`;
     

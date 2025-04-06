@@ -17,14 +17,69 @@ export class MainScene extends Phaser.Scene {
       this.load.image(`cursorFish ${i}`, `./cursor${i}.png`);
     }
     this.load.image('spark', './sparks.png')
+
+
+    const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+  
+    graphics.fillStyle(0xaefcff, 1);
+    graphics.fillCircle(32, 32, 32);
+  
+    graphics.generateTexture('bubble', 64, 64);
+
+
+    this.textures.generate('bubble2', {
+      data: [
+        '...........',
+        '....555....',
+        '...5...5...',
+        '..5.444.5..',
+        '.5.4...4.5.',
+        '.5.4...4.5.',
+        '.5.4...4.5.',
+        '..5.444.5..',
+        '...5...5...',
+        '....555....',
+        '...........',
+    ],
+    pixelWidth: 3, // smaller pixels for more detail
+    palette: {
+        '4': '#ffffff',   // highlight
+        '5': '#aefcee',   // bubble base
+        '.': 0x00000000   // transparent
+    }
+  });
+
+  this.textures.generate('water_particle', {
+    data: [
+      '...........',
+      '....555....',
+      '...5...5...',
+      '..5.444.5..',
+      '.5.4...4.5.',
+      '.5.4...4.5.',
+      '.5.4...4.5.',
+      '..5.444.5..',
+      '...5...5...',
+      '....555....',
+      '...........',
+  ],
+  pixelWidth: 1, // smaller pixels for more detail
+  palette: {
+      '4': '#ffffff',   // highlight
+      '5': '#aefcee',   // bubble base
+      '.': 0x00000000   // transparent
   }
+});
+  }
+  
+  
 
   create() {
     // Instantiate managers
     this.gameManager = new GameManager(this);
     this.uiManager = new UIManager(this, this.gameManager);
 
-    
+
 
     // Draw depth lines
     // const graphics = this.add.graphics();
@@ -48,12 +103,13 @@ export class MainScene extends Phaser.Scene {
       window.innerHeight / 2,   // Second line at 1/2 height
       (window.innerHeight * 3) / 4 // Third line at 3/4 height
     ];
-
+    this.chances = ["High", "Medium", "Low"];
     // Loop through each section and draw colored rectangles
     this.depthLines.forEach((y, index) => {
       // Set the color for each section
       graphics.fillStyle(0x000000, opacities[index]); // Set opacity based on the section index
-     
+      const fontRatio = Math.min(window.innerWidth, window.innerHeight);
+
       
       // If it's the first section, draw it from the top of the screen to the first line
       if (index === 0) {
@@ -71,6 +127,19 @@ export class MainScene extends Phaser.Scene {
       graphics.moveTo(0, y);
       graphics.lineTo(this.game.config.width, y);
       graphics.strokePath();
+
+      this.add.text(
+        window.innerWidth/2,
+        this.depthLines[index] + 20,
+        `Lure chance: ${this.chances[index]}`,
+        { fontSize: `${Math.floor(fontRatio * 0.025)}px`, 
+                fill: '#ffff04', 
+               
+                
+
+
+
+      }).setOrigin(0.5).setAlpha(0.4).setDepth(8);
     });
 
     // Draw the bottom section (between the third line and the bottom of the screen)
@@ -84,6 +153,21 @@ export class MainScene extends Phaser.Scene {
       loop: true,
       callback: () => this.gameManager.updateIdleFish(),
     });
+    const emitterManager = this.add.particles(window.innerWidth/2, window.innerHeight/2, 'bubble2', {
+      x: { min: -window.innerWidth, max: window.innerWidth },
+      y: {min: window.innerHeight/2, max: window.innerHeight/12},
+      lifespan: 4000,
+      speedY: { min: -50, max: -100 },
+      speedX: { min: -20, max: 20 },
+      scale: { start: 0.2, end: 0.6 },
+      alpha: { start: 1, end: 0 },
+      tint: [0xffffff, 0xddddd, 0xeeeee],
+      frequency: 500,
+      quantity: 6,
+      blendMode: 'ADD'
+  });
+
+
   }
 
   update() {
