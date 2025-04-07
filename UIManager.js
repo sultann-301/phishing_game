@@ -24,7 +24,7 @@ export class UIManager {
         fontFamily:"Joystix",
       }).setOrigin(0.5, 0.5);
   
-      this.fishButton = this.createButton(width / 2, height / 11, 'Phish',
+      this.fishButton = this.createButton(width / 2, height / 10.5, 'Phish',
         () => {
           if(this.gameManager.bait.y.toFixed(2) <= height / 4)
             {
@@ -43,7 +43,7 @@ export class UIManager {
         }, true
       );
   
-      this.resetButton = this.createButton(width *  0.85, height / 20, `Reels\n  ${this.gameManager.reelCount}`,
+      this.resetButton = this.createButton(width *  0.85, height / 17, `Reels\n  ${this.gameManager.reelCount}`,
         () => {            
             if(this.gameManager.bait.y.toFixed(2) != this.gameManager.initialBaitY.toFixed(2))
             {
@@ -57,7 +57,7 @@ export class UIManager {
         }
       );
   
-      this.shopButton = this.createButton(width * 0.12, height / 20, 'Shop',
+      this.shopButton = this.createButton(width * 0.15, height / 17, 'Shop',
         () => {
           if (this.gameManager.bait.y.toFixed(2) == this.gameManager.initialBaitY.toFixed(2) || this.gameManager.bait.body.velocity.y < 0) {
             this.openModal();
@@ -65,7 +65,7 @@ export class UIManager {
         }
       );
 
-      this.tutButton = this.createButton(width * 0.12, height/6.5, "Rules", () => {
+      this.tutButton = this.createButton(width * 0.15, height/6, "Rules", () => {
         if (this.gameManager.bait.y.toFixed(2) == this.gameManager.initialBaitY.toFixed(2)) {
           this.createInstructionsModal();
         }
@@ -103,7 +103,8 @@ export class UIManager {
       const { width, height } = this.scene.game.config;
       const fontRatio = Math.min(width, height)
       const adjuster = Math.min(1, width/height * 1.1)
-      const bg = this.scene.add.rectangle(x, y,phish ? width / (5 * adjuster) : width/5.5, phish ? (height*adjuster/20 + 20) :  height*adjuster/20 + 30*500/height, 0x355da4, 1).setInteractive();
+      const adjuster2 = Math.min(1, height/width * 1.5)
+      const bg = this.scene.add.rectangle(x, y,phish ? width / (5 * adjuster) : width/5.5, phish ? (height*adjuster/20 + 20) :  (height*adjuster/20 + 20)/adjuster2 + 9, 0x355da4, 1).setInteractive();
       const outline = this.scene.add.graphics();
         outline.lineStyle(3, 0xffff04); // White outline, 2px thick
         outline.strokeRect(
@@ -154,7 +155,6 @@ export class UIManager {
     }
 
 
-  
     createModal() {
       const { centerX, centerY } = this.scene.cameras.main;
       const { width, height } = this.scene.game.config;
@@ -242,8 +242,6 @@ export class UIManager {
                   });
               this.gameManager.bait.setTexture(`hook${i+2}`);
 
-
-
           } else {
             this.scene.tweens.add({
               targets: option,
@@ -309,6 +307,7 @@ export class UIManager {
       const { centerX, centerY } = this.scene.cameras.main;
       const { width, height } = this.scene.game.config;
       const fontRatio = Math.min(width, height)
+      const adjuster = Math.max(1, height/width)
     
       // Dark semi-transparent background
       this.instructionsBackground = this.scene.add.graphics()
@@ -319,7 +318,7 @@ export class UIManager {
         .setDepth(10);
     
       // Title
-      this.instructionsTitle = this.scene.add.text(centerX, centerY - height / 3.8  , 'Rules', {
+      this.instructionsTitle = this.scene.add.text(centerX, centerY - height / 3.4  , 'Rules', {
         fontSize: '9vmin',
         fontFamily:"JoyStix",
         fill: '#ffffff'
@@ -349,7 +348,7 @@ export class UIManager {
       ).setOrigin(0.5).setDepth(11);
     
       // Close button
-      this.instructionsCloseButton = this.scene.add.text(centerX + width / 3 - 20, centerY - height / 3.8 , 'X', {
+      this.instructionsCloseButton = this.scene.add.text(centerX + width / 3 - 20, centerY - height / 3.4 , 'X', {
         fontSize: '48px',
         fontFamily:"JoyStix",
         fill: '#ff0000'

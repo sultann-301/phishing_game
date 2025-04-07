@@ -21,22 +21,20 @@ export class GameManager {
       const adjuster = Math.max(1, (width*1.1/height))
       const adjuster2 = Math.min(1, width/height * 1.1)
       const boatWidth = width / (5 * adjuster2);
-      console.log(boatWidth);
-      
 
-      const startPoint = new Phaser.Math.Vector2(width/2 - boatWidth/2, (height/6) -7*adjuster);
+      const startPoint = new Phaser.Math.Vector2(width/2 - boatWidth/2, (height/6) -15/adjuster);
       const controlPoint1 = new Phaser.Math.Vector2(width / 2, (height/6)+40*adjuster);
-      const endPoint = new Phaser.Math.Vector2(width/2 + boatWidth/2, (height/6) -7*adjuster);
+      const endPoint = new Phaser.Math.Vector2(width/2 + boatWidth/2, (height/6) -15/adjuster);
       
 
       const boatSprite = this.scene.add.graphics({ fillStyle: { color: 0x355da4 }, lineStyle: {width: 5, color:0xffff04} });
-// Trapezium coordinates
+
       this.curve = new Phaser.Curves.QuadraticBezier(startPoint, controlPoint1, endPoint);
       
       boatSprite.beginPath();
       boatSprite.moveTo(startPoint);  // Top left
       boatSprite.lineTo(endPoint);  // Top right
-      const curvePoints = this.curve.getPoints(20); // Higher = smoother
+      const curvePoints = this.curve.getPoints(30); // Higher = smoother
 
       // Move to first point
       boatSprite.moveTo(curvePoints[0].x, curvePoints[0].y);
@@ -45,8 +43,7 @@ export class GameManager {
       for (let i = 1; i < curvePoints.length; i++) {
           boatSprite.lineTo(curvePoints[i].x, curvePoints[i].y);
       }
-      // boatSprite.lineTo((width/2)+25, (height/6) +15);  // Bottom right
-      // boatSprite.lineTo((width/2)-25, (height/6) +15);  // Bottom left
+
       boatSprite.closePath();
       boatSprite.strokePath();
       boatSprite.fillPath();
@@ -56,18 +53,19 @@ export class GameManager {
 // optional: convert to texture so you can reuse it like a sprite
       boatSprite.generateTexture('boatShape', 60, 40);
 
-      this.boat = this.scene.physics.add.sprite(width / 2, height / 6, "boatShape");
+      this.boat = this.scene.physics.add.sprite(width / 2, (height/6), "boatShape");
       
-      this.initialBaitY = this.boat.y + 20;
+      this.initialBaitY = this.boat.y + 20*adjuster;
       this.bait = this.scene.physics.add.sprite(this.boat.x, this.initialBaitY, 'hook1');
       this.bait.setScale(0.03);
+      // this.bait.setOrigin(0.5,0.25);
       this.bait.setCollideWorldBounds(true);
       this.boat.setDepth(2);
       this.bait.setDepth(2);
 
       this.scene.tweens.add({
         targets: [boatSprite, this.bait],
-        x: "+=5",  
+        x: "+=10",  
         ease: 'Sine.easeOutIn',  // Ease type
         duration: 1000,  // Duration of each movement
         repeat: -1,  // Loop forever
@@ -135,6 +133,8 @@ export class GameManager {
     }
   
     update() {
+      const { width, height } = this.scene.game.config;
+      const adjuster = width > height ? 1 : -0.8
       if (this.bait.y < this.initialBaitY) {
         this.bait.setVelocityY(0);
         this.bait.y = this.initialBaitY;
@@ -143,7 +143,7 @@ export class GameManager {
       this.applyProbBoost();
      
         // Draw line from last position to current position
-      this.trace.lineBetween(this.boat.x, this.boat.y - 10, this.bait.x, this.bait.y - (this.bait.displayHeight / 4)).setDepth(2);
+      this.trace.lineBetween(this.boat.x, this.boat.y + 10*adjuster, this.bait.x, this.bait.y - (this.bait.displayHeight / 4)).setDepth(2);
       
     
   
@@ -189,8 +189,6 @@ export class GameManager {
                 tint: fish.score == 1024*4 ? 0xFFD700 : 0xffff04 , // 💛 Gold if 1024, white otherwise
                 quantity: fish.score == 1024*4 ? 100 : 10
               });
-
-  
               this.scene.time.delayedCall(400, () => {
                 emitter.stop();
             });
@@ -198,11 +196,8 @@ export class GameManager {
           }
         });
         
-      }
-      
-      
+      }    
     }
-
 
     applyProbBoost()
     {
@@ -218,32 +213,27 @@ export class GameManager {
       if(this.perks[1]){
         const {x,y} = fish;
 
-      const { width, height } = this.scene.game.config;
-      for( let i = 0; i < 8; i++)
-      {
-        let minY = fish.depthLevel * height / 4 + 10
-        let maxY = (fish.depthLevel+1)  * height / 4 + 10
-        let spawnRangeX = Phaser.Math.Between(x-70, x+70);
-        let spawnRangeY = Phaser.Math.Between(Math.max(minY, y-50), Math.min(maxY, y+50));
-        let NewFish = this.scene.physics.add.sprite(spawnRangeX, spawnRangeY, `cursorFish ${fish.type}`)
-        NewFish.scaleX = fish.scaleX;
-        NewFish.scaleY = fish.scaleY;
-        NewFish.setBounce(1);
-        NewFish.setCollideWorldBounds(true);
-        NewFish.depthLevel = fish.depthLevel;
-        NewFish.score = fish.score;
-        NewFish.moveChance = 1;
-        NewFish.setVelocity(Phaser.Math.Between(-50, 50), 0);
-        NewFish.setTint('0xaaffaa');
-        this.fishes.add(NewFish);
-
-
-      }
-      this.perks[1] = !this.perks[1];
-
-
-      }
-      
+        const { width, height } = this.scene.game.config;
+        for( let i = 0; i < 8; i++)
+        {
+          let minY = fish.depthLevel * height / 4 + 10
+          let maxY = (fish.depthLevel+1)  * height / 4 + 10
+          let spawnRangeX = Phaser.Math.Between(x-70, x+70);
+          let spawnRangeY = Phaser.Math.Between(Math.max(minY, y-50), Math.min(maxY, y+50));
+          let NewFish = this.scene.physics.add.sprite(spawnRangeX, spawnRangeY, `cursorFish ${fish.type}`)
+          NewFish.scaleX = fish.scaleX;
+          NewFish.scaleY = fish.scaleY;
+          NewFish.setBounce(1);
+          NewFish.setCollideWorldBounds(true);
+          NewFish.depthLevel = fish.depthLevel;
+          NewFish.score = fish.score;
+          NewFish.moveChance = 1;
+          NewFish.setVelocity(Phaser.Math.Between(-50, 50), 0);
+          NewFish.setTint('0xaaffaa');
+          this.fishes.add(NewFish);
+        }
+        this.perks[1] = !this.perks[1];
+      }   
     }
 
     applySpearPhish()
@@ -253,9 +243,7 @@ export class GameManager {
       if(this.perks[2]){
         let x = Phaser.Math.Between(200, this.scene.game.config.width - 200);
         let y = Phaser.Math.Between((3 * height / 4 + 15) + (20 * (height / 800)), (3 + 1) * height / 4 - 30);
-        let type = Phaser.Math.Between(1, 4);
-    
-        
+        let type = Phaser.Math.Between(1, 4); 
         let fish = this.scene.physics.add.sprite(x, y, `cursorFish ${type}`)
           .setScale((type === 1 || type === 4) ? 0.06 * 2.5 : 0.01 * 2.5);
         fish.type = type;
@@ -267,13 +255,9 @@ export class GameManager {
         fish.setVelocity(Phaser.Math.Between(-50, 50), 0);
         fish.setTint("0xd4af37");
         fish.setDepth(5);
-
         this.fishes.add(fish);
-
         this.perks[2] = !this.perks[2];
       } 
-  
-
     }
   
     getDepthLevel(y) {
