@@ -64,7 +64,7 @@ export class GameManager {
       this.bait.setDepth(2);
 
       this.scene.tweens.add({
-        targets: [boatSprite, this.bait],
+        targets: [this.bait],
         x: "+=10",  
         ease: 'Sine.easeOutIn',  // Ease type
         duration: 1000,  // Duration of each movement

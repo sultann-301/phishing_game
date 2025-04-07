@@ -40,6 +40,14 @@ export class UIManager {
           this.fishButton.list[1].setText('Phish');
           this.gameManager.updateIdleFish();
           if(this.gameManager.bait.y.toFixed(2) > height / 4) this.fishButton.list[0].setAlpha(0.5);
+          this.tweenyweeny2 = this.scene.tweens.add({
+            targets: this.resetButton,
+            scaleY : 1.08,
+            duration: 500,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut',
+          });
         }, true
       );
   
@@ -53,10 +61,11 @@ export class UIManager {
                 this.gameManager.resetBait(this.resetButton);
                 this.resetButton.list[1].setText(`Reels\n  ${this.gameManager.reelCount}`)
                 this.gameManager.updateIdleFish();
+                this.tweenyweeny2.stop()
             }
         }
       );
-  
+
       this.shopButton = this.createButton(width * 0.15, height / 17, 'Shop',
         () => {
           if (this.gameManager.bait.y.toFixed(2) == this.gameManager.initialBaitY.toFixed(2) || this.gameManager.bait.body.velocity.y < 0) {
@@ -65,11 +74,43 @@ export class UIManager {
         }
       );
 
+      this.centerX = width * 0.15
+      this.centerY = height/6
       this.tutButton = this.createButton(width * 0.15, height/6, "Rules", () => {
         if (this.gameManager.bait.y.toFixed(2) == this.gameManager.initialBaitY.toFixed(2)) {
           this.createInstructionsModal();
+          this.tweenyweeny.stop()
+          this.shopButton.list[0].setAlpha(1);
+          this.fishButton.list[0].setAlpha(1);
+          this.resetButton.list[0].setAlpha(1);
+          this.fishButton.list[0].setInteractive();
+          this.shopButton.list[0].setInteractive();
+          this.resetButton.list[0].setInteractive();
+          this.fishButton.list[1].setInteractive();
+          this.shopButton.list[1].setInteractive();
+          this.resetButton.list[1].setInteractive();
         }
       });
+
+      this.shopButton.list[0].setAlpha(0.5);
+      this.fishButton.list[0].setAlpha(0.5);
+      this.resetButton.list[0].setAlpha(0.5);
+      this.fishButton.list[0].disableInteractive();
+      this.shopButton.list[0].disableInteractive();
+      this.resetButton.list[0].disableInteractive();
+      this.fishButton.list[1].disableInteractive();
+      this.shopButton.list[1].disableInteractive();
+      this.resetButton.list[1].disableInteractive();
+
+     this.tweenyweeny = this.scene.tweens.add({
+        targets: this.tutButton,
+        scaleY : 1.06,
+
+        duration: 500,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+    });
 
       this.scene.time.addEvent({
         delay: 100,
@@ -113,9 +154,11 @@ export class UIManager {
         bg.width +3,
         bg.height +3
         );
+        
       const text = this.scene.add.text(x, y, label, { fontSize: `${fontRatio * 0.035}px`, fontFamily:"JoyStix", color: '#ffff04',  wordWrap: {width: width/5.5}})
       .setOrigin(0.5);
-      const container = this.scene.add.container(0, 0, [bg, text]);
+      const container = this.scene.add.container(0, 0, [bg, text, outline]);
+      
       text.setInteractive();
       bg.on('pointerdown', onDown);
       bg.on('pointerup', onUp);
@@ -374,12 +417,6 @@ export class UIManager {
       this.instructionsBody.setVisible(true);
       this.instructionsCloseButton.setVisible(true);
       this.scene.time.timeScale = 0;
-      this.fishButton.list[0].disableInteractive();
-      this.shopButton.list[0].disableInteractive();
-      // this.fishButton.list[0].setAlpha(0.5);
-      // this.shopButton.list[0].setAlpha(0.5);
-      this.fishButton.list[1].disableInteractive();
-      this.shopButton.list[1].disableInteractive()
 
     }
 
