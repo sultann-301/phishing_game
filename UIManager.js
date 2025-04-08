@@ -145,8 +145,6 @@ export class UIManager {
       this.shopButton.list[1].disableInteractive();
       this.resetButton.list[1].disableInteractive();
     } else {
-      console.log("aloo");
-
       this.tweenyweeny.stop();
     }
 
@@ -263,6 +261,7 @@ export class UIManager {
     const { width, height } = this.scene.game.config;
     const fontRatio = Math.min(width, height);
     const adjuster = Math.min(1, (height / width) * 1.2);
+    const adjuster2 = Math.min(1, (height / width) * 1.5);
 
     this.modalBackground = this.scene.add
       .graphics()
@@ -309,7 +308,7 @@ export class UIManager {
       let option = this.scene.add
         .text(
           centerX,
-          centerY - height / 6 + (i * height) / 5.2,
+          centerY - (height / 6) + (i * height) / 5.2,
           `${text} (${(i + 1) * 1024} bytes)`,
           {
             fontSize: `${fontRatio * 0.035}px`,
@@ -335,14 +334,14 @@ export class UIManager {
             fontFamily: "JoyStix",
             fill: "#e7e304",
             wordWrap: {
-              width: width * 0.67,
+              width: width * (0.78*adjuster2),
             },
           }
         )
         .setInteractive()
         .setVisible(false)
         .setDepth(11)
-        .setOrigin(-0.03, 0);
+        .setOrigin(0.03);
 
       option.on("pointerover", () => {
         if (

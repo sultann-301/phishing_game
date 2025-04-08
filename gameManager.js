@@ -171,7 +171,6 @@ export class GameManager {
       let lvlCount = this.fishes
         .getChildren()
         .filter((fish) => fish.depthLevel == level && fish.active).length;
-      console.log(lvlCount);
 
       if (lvlCount <= 15) {
         for (let i = 0; i < 3; i++) {
@@ -181,7 +180,6 @@ export class GameManager {
             ((level + 1) * height) / 4 - 30
           );
           let type = Phaser.Math.Between(1, 4);
-
           let scaleIndex = Phaser.Math.Between(0, 4);
           let fish = this.scene.physics.add
             .sprite(x, y, `cursorFish ${type}`)

@@ -14,8 +14,6 @@ export class MainScene extends Phaser.Scene {
       .load()
       .then(() => {
         document.fonts.add(font); // Add the font to the document
-        console.log("Font loaded");
-
         // Notify that the font has been loaded and switch to the main scene
         this.sys.game.events.emit("font-loaded");
       })
@@ -89,16 +87,6 @@ export class MainScene extends Phaser.Scene {
     this.gameManager = new GameManager(this);
     this.uiManager = new UIManager(this, this.gameManager);
 
-    // Draw depth lines
-    // const graphics = this.add.graphics();
-    // graphics.lineStyle(3, 0xffff04);
-    // this.depthLines = [window.innerHeight/4, window.innerHeight/2, (window.innerHeight*3)/4];
-    // this.depthLines.forEach(y => {
-    //   graphics.moveTo(0, y);
-    //   graphics.lineTo(this.game.config.width, y);
-    //   graphics.strokePath();
-    // });
-
     const graphics = this.add.graphics();
     const adjuster = Math.min(
       1,
@@ -146,7 +134,6 @@ export class MainScene extends Phaser.Scene {
       graphics.moveTo(0, y);
       graphics.lineTo(this.game.config.width, y);
       graphics.strokePath();
-      //console.log(window.innerHeight)
       this.add
         .text(
           window.innerWidth / 2,
@@ -164,7 +151,7 @@ export class MainScene extends Phaser.Scene {
     });
 
     // Draw the bottom section (between the third line and the bottom of the screen)
-    graphics.fillStyle(0x000000, opacities[3]); // Set color for the last section (yellow)
+    graphics.fillStyle(0x000000, opacities[3]); // Set color for the last section 
     graphics.fillRect(
       0,
       this.depthLines[2],
