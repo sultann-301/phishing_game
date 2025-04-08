@@ -129,7 +129,8 @@ export class GameManager {
     }
   }
 
-  resetBait(resetButton) {
+  resetBait() {
+    const { width, height } = this.scene.game.config;
     if (this.bait.y !== this.initialBaitY) {
       this.bait.body.enable = false;
       this.scene.tweens.add({
@@ -137,14 +138,8 @@ export class GameManager {
         y: this.initialBaitY,
         ease: "Linear",
         duration: 750,
-        onStart: () => {
-          resetButton.list[0].disableInteractive();
-          resetButton.list[1].disableInteractive();
-        },
         onComplete: () => {
           this.bait.body.enable = true;
-          resetButton.list[0].setInteractive();
-          resetButton.list[1].setInteractive();
         },
       });
       this.updateIdleFish();

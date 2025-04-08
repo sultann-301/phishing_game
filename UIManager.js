@@ -36,32 +36,55 @@ export class UIManager {
       height / 10.5,
       "Phish",
       () => {
-        if (this.gameManager.bait.y.toFixed(2) <= height / 4) {
-          this.shopButton.list[0].setAlpha(0.5);
-          this.tutButton.list[0].setAlpha(0.5);
-          this.fishButton.list[1].setText("Phishing..");
-          this.gameManager.bait.body.setVelocityY(200);
+        if (this.fishButton.list[1].text == 'Phish') {
+          if (this.gameManager.bait.y.toFixed(2) <= height / 4) {
+            this.shopButton.list[0].setAlpha(0.5);
+            this.tutButton.list[0].setAlpha(0.5);
+            this.gameManager.bait.body.setVelocityY(200);
+            this.fishButton.list[1].setText("Phishing..");
+            
+          }
+          this.gameManager.updateIdleFish();
         }
-        this.gameManager.updateIdleFish();
+        if (this.fishButton.list[1].text == 'Reel?'){
+          if (this.gameManager.bait.y.toFixed(2) != this.gameManager.initialBaitY.toFixed(2)) {
+            console.log("hey")
+            this.shopButton.list[0].setAlpha(1);
+            this.tutButton.list[0].setAlpha(1);
+            this.fishButton.list[0].setAlpha(1);
+            this.gameManager.resetBait();
+            this.resetButton.list[1].setText(
+              `Reels\n  ${this.gameManager.reelCount}`
+            );
+            this.gameManager.updateIdleFish();
+            this.tweenyweeny2.stop();
+            this.fishButton.list[1].setText('Phish')
+          }
+        }
       },
       () => {
-        this.gameManager.bait.body.setVelocityY(0);
-        this.fishButton.list[1].setText("Phish");
-        this.gameManager.updateIdleFish();
-        if (this.gameManager.bait.y.toFixed(2) > height / 4)
-          this.fishButton.list[0].setAlpha(0.5);
-        this.resetButton.scaleY = 1;
-        this.tweenyweeny2 = this.scene.tweens.add({
-          targets: this.resetButton,
-          scaleY: 1.08,
-          duration: 500,
-          yoyo: true,
-          repeat: -1,
-          ease: "Sine.easeInOut",
-          onStart: () => {
-            this.resetButton.list[1].setText("Reel?");
-          },
-        });
+        if (this.fishButton.list[1].text == 'Phishing..') {
+          this.gameManager.bait.body.setVelocityY(0);
+          this.fishButton.list[1].setText('Phish');
+          this.gameManager.updateIdleFish();
+          if (this.gameManager.bait.y.toFixed(2) > height / 4) {
+            this.fishButton.list[0].setAlpha(0.5);
+            this.fishButton.scaleY = 1;
+            
+            this.tweenyweeny2 = this.scene.tweens.add({
+              targets: this.fishButton,
+              scaleY: 0.92,
+              duration: 500,
+              yoyo: true,
+              repeat: -1,
+              ease: "Sine.easeInOut",
+              onStart: () => {
+                this.fishButton.list[1].setText("Reel?");
+                this.fishButton.list[0].setAlpha(1);
+            },
+          });
+        }
+      }
       },
       true
     );
@@ -69,24 +92,9 @@ export class UIManager {
     this.resetButton = this.createButton(
       width * 0.85,
       height / 17,
-      `Reels\n  ${this.gameManager.reelCount}`,
-      () => {
-        if (
-          this.gameManager.bait.y.toFixed(2) !=
-          this.gameManager.initialBaitY.toFixed(2)
-        ) {
-          this.shopButton.list[0].setAlpha(1);
-          this.tutButton.list[0].setAlpha(1);
-          this.fishButton.list[0].setAlpha(1);
-          this.gameManager.resetBait(this.resetButton);
-          this.resetButton.list[1].setText(
-            `Reels\n  ${this.gameManager.reelCount}`
-          );
-          this.gameManager.updateIdleFish();
-          this.tweenyweeny2.stop();
-        }
-      }
+      `Reels\n  ${this.gameManager.reelCount}`
     );
+    this.resetButton.list[0].setAlpha(0.3)
 
     this.shopButton = this.createButton(
       width * 0.15,
@@ -127,7 +135,6 @@ export class UIManager {
     this.tweenyweeny = this.scene.tweens.add({
       targets: this.tutButton,
       scaleY: 1.06,
-
       duration: 500,
       yoyo: true,
       repeat: -1,
@@ -137,15 +144,25 @@ export class UIManager {
     if (!localStorage.getItem("hasPlayed")) {
       this.shopButton.list[0].setAlpha(0.5);
       this.fishButton.list[0].setAlpha(0.5);
-      this.resetButton.list[0].setAlpha(0.5);
+
       this.fishButton.list[0].disableInteractive();
       this.shopButton.list[0].disableInteractive();
-      this.resetButton.list[0].disableInteractive();
+      
       this.fishButton.list[1].disableInteractive();
       this.shopButton.list[1].disableInteractive();
-      this.resetButton.list[1].disableInteractive();
+
     } else {
       this.tweenyweeny.stop();
+      this.fishButton.scaleY = 1;
+      this.tweenyweeny3 = this.scene.tweens.add({
+        targets: this.fishButton,
+        scaleY: 0.95,
+        duration: 500,
+        yoyo: true,
+        repeat: -1,
+        ease: "Sine.easeInOut",
+
+    });
     }
 
     this.scene.time.addEvent({
@@ -165,21 +182,19 @@ export class UIManager {
           this.shopButton.list[0].setAlpha(0.5);
           this.tutButton.list[0].setAlpha(0.5);
           this.fishButton.list[0].setAlpha(0.5);
-          this.resetButton.list[0].setAlpha(0.5);
           this.fishButton.list[0].disableInteractive();
           this.tutButton.list[0].disableInteractive();
           this.shopButton.list[0].disableInteractive();
-          this.resetButton.list[0].disableInteractive();
           this.fishButton.list[1].disableInteractive();
           this.tutButton.list[1].disableInteractive();
           this.shopButton.list[1].disableInteractive();
-          this.resetButton.list[1].disableInteractive();
+
         }
       },
     });
   }
 
-  createButton(x, y, label, onDown, onUp = () => {}, phish = false) {
+  createButton(x, y, label, onDown = () => {}, onUp = () => {}, phish = false) {
     const { width, height } = this.scene.game.config;
     const fontRatio = Math.min(width, height);
     const adjuster = Math.min(1, (width / height) * 1.1);
@@ -188,7 +203,7 @@ export class UIManager {
       .rectangle(
         x,
         y,
-        phish ? width / (5 * adjuster) : width / 5.5,
+        phish ? width / (5 * adjuster) + 10: width / 5.5,
         phish
           ? (height * adjuster) / 20 + 20
           : ((height * adjuster) / 20 + 20) / adjuster2 + 9,
@@ -525,7 +540,6 @@ export class UIManager {
       this.shopButton.list[0].setAlpha(1);
       this.fishButton.list[1].setInteractive();
       this.shopButton.list[1].setInteractive();
-      this.resetButton.list[0].setInteractive();
       this.tutButton.list[0].setInteractive();
       this.tutButton.list[1].setInteractive();
       this.scene.time.timeScale = 1;
@@ -543,10 +557,8 @@ export class UIManager {
     this.tutButton.list[1].disableInteractive();
     this.fishButton.list[0].disableInteractive();
     this.shopButton.list[0].disableInteractive();
-    this.resetButton.list[0].disableInteractive();
     this.fishButton.list[1].disableInteractive();
     this.shopButton.list[1].disableInteractive();
-    this.resetButton.list[1].disableInteractive();
   }
 
   createGameOverScreen() {
